@@ -1,0 +1,111 @@
+import inspect
+import math
+import sqlite3
+from discord.ext import commands
+import discord
+
+connection = sqlite3.connect('customcommands.db')
+
+cursor = connection.cursor()
+
+client = commands.Bot(command_prefix='t!')
+
+
+@client.event
+async def on_ready():
+    print("bot is yesing")
+
+
+@client.command(name="t")
+async def s(ctx, ccname):
+    command5 = f"""SELECT DISTINCT CUSTOMCOMMAND FROM CUSTOMCOMMANDS  WHERE CUSTOMCOMMAND = ("{ccname}")"""
+    cursor.execute(command5)
+    command6 = f"""SELECT WHATWILLCCSEND FROM CUSTOMCOMMANDS WHERE CUSTOMCOMMAND LIKE '%{ccname}%'"""
+    cursor.execute(command6)
+    result = cursor.fetchone()
+    if result is not None:
+        await ctx.send(result[0].replace("(,)", ""))
+
+
+@client.command(name='eval', pass_context=True)
+@commands.is_owner()
+async def eval_(ctx, *, command):
+    res = eval(command)
+    if inspect.isawaitable(res):
+        print(await res)
+    else:
+        print(res)
+
+
+@client.command()
+async def ping(ctx):
+    embed = discord.Embed(
+        title='Ping',
+        description=f"Pong! `{math.floor(client.latency * 1000)}ms`",
+        color=discord.Colour.orange()
+    )
+
+    embed.set_footer(text="i am racist")
+    embed.set_image(url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
+
+    await ctx.send(embed=embed)
+
+
+@client.command()
+async def allcc(ctx):
+    cursor.execute("SELECT CUSTOMCOMMAND FROM CUSTOMCOMMANDS")
+    allccs = cursor.fetchall()
+    embed = discord.Embed(
+        title="All Custom Commands",
+        description=allccs,
+        color=discord.Colour.orange()
+    )
+
+    embed.set_footer(text="this is all the custom commands")
+    embed.set_author(name=ctx.author.name)
+    embed.set_thumbnail(url=ctx.author.avatar_url_as(size=128))
+
+    await ctx.send(embed=embed)
+
+
+@client.command()
+async def addcc(ctx, thing, *, thingtosend):
+    command1 = """CREATE TABLE IF NOT EXISTS
+    CUSTOMCOMMANDS(
+    CUSTOMCOMMAND  TEXT  PRIMARY KEY NOT NULL,
+    WHATWILLCCSEND TEXT              NOT NULL
+    )"""
+    cursor.execute(command1)
+    cursor.execute(f'INSERT INTO CUSTOMCOMMANDs VALUES ("{thing}", "{thingtosend}")')
+    connection.commit()
+    await ctx.send("added " + thing + " in database")
+
+
+@client.command()
+async def removecc(ctx, *, thingtoremove):
+    command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE  CUSTOMCOMMAND = {thingtoremove}"""
+    cursor.execute(command4)
+    connection.commit()
+    result = cursor.fetchall()
+    if result is not None:
+        await ctx.send(f"deleted {thingtoremove} from database")
+
+
+@client.command()
+@commands.is_owner()
+async def removeallcc(ctx):
+    cursor.execute("DELETE FROM CUSTOMCOMMANDS")
+    connection.commit()
+    await ctx.send("deleted every custom command from database")
+
+
+@client.command()
+async def john_china(ctx):
+    await ctx.send("https://cdn.discordapp.com/attachments/792480412647161906/848385363709526046/video0_1.mp4")
+
+
+with open("token.txt") as reader:
+    TOKEN = reader.read()
+
+client.run(TOKEN)
