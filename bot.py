@@ -8,7 +8,7 @@ connection = sqlite3.connect('customcommands.db')
 
 cursor = connection.cursor()
 
-client = commands.Bot(command_prefix='test!')
+client = commands.Bot(command_prefix='t!')
 client.remove_command('help')
 
 
