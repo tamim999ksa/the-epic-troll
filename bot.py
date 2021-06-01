@@ -9,11 +9,13 @@ connection = sqlite3.connect('customcommands.db')
 cursor = connection.cursor()
 
 client = commands.Bot(command_prefix='t!')
+client.remove_command('help')
 
 
 @client.event
 async def on_ready():
     print("bot is yesing")
+
 
 
 @client.command(name="t")
@@ -100,6 +102,22 @@ async def removeallcc(ctx):
     await ctx.send("deleted every custom command from database")
 
 
+@client.group(invoke_without_command=True)
+async def help(ctx):
+    embed = discord.Embed(
+        title="Help",
+        description="Use t!help to find out about all the commands",
+        color=discord.Colour.orange()
+    )
+    embed.add_field(name="Custom Commands", value="t!addcc {customcommand} {whatwillcustomcommandsend} \nt!removecc {customcommandname} \nt!removeallcc(tamim only) \nt!t {customcommandname}", inline=False)
+    embed.add_field(name="Status", value="t!ping")
+    embed.add_field(name="Other", value="t!john_china")
+    embed.set_footer(text="yo mama so fat")
+    embed.set_author(name=ctx.author.name)
+
+    await ctx.send(embed=embed)
+
+
 @client.command()
 async def john_china(ctx):
     await ctx.send("https://cdn.discordapp.com/attachments/792480412647161906/848385363709526046/video0_1.mp4")
@@ -109,3 +127,4 @@ with open("token.txt") as reader:
     TOKEN = reader.read()
 
 client.run(TOKEN)
+
