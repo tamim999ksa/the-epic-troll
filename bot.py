@@ -118,6 +118,7 @@ async def help(ctx):
                     inline=False)
     embed.add_field(name="Status", value="t!ping")
     embed.add_field(name="Other", value="t!john_china")
+    embed.add_field(name="Translation", value="t!translate {untranslated text} \nt!translate_from {from} {to} {untranslated text}")
     embed.set_footer(text="yo mama so fat")
     embed.set_author(name=ctx.author.name)
 
