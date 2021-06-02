@@ -3,6 +3,9 @@ import math
 import sqlite3
 from discord.ext import commands
 import discord
+from googletrans import Translator
+
+translator = Translator()
 
 connection = sqlite3.connect('customcommands.db')
 
@@ -15,7 +18,6 @@ client.remove_command('help')
 @client.event
 async def on_ready():
     print("bot is yesing")
-
 
 
 @client.command(name="t")
@@ -48,7 +50,8 @@ async def ping(ctx):
     )
 
     embed.set_footer(text="i am racist")
-    embed.set_image(url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
+    embed.set_image(
+        url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
 
     await ctx.send(embed=embed)
@@ -66,7 +69,8 @@ async def allcc(ctx):
 
     embed.set_footer(text=f"Number of custom commands is: {len(allccs)}")
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
-    embed.set_thumbnail(url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
+    embed.set_thumbnail(
+        url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
 
     await ctx.send(embed=embed)
 
@@ -109,7 +113,9 @@ async def help(ctx):
         description="Use t!help to find out about all the commands",
         color=discord.Colour.orange()
     )
-    embed.add_field(name="Custom Commands", value="t!addcc {customcommand} {whatwillcustomcommandsend} \nt!removecc {customcommandname} \nt!removeallcc(tamim only) \nt!t {customcommandname}", inline=False)
+    embed.add_field(name="Custom Commands",
+                    value="t!addcc {customcommand} {whatwillcustomcommandsend} \nt!removecc {customcommandname} \nt!removeallcc(tamim only) \nt!t {customcommandname}",
+                    inline=False)
     embed.add_field(name="Status", value="t!ping")
     embed.add_field(name="Other", value="t!john_china")
     embed.set_footer(text="yo mama so fat")
@@ -123,8 +129,41 @@ async def john_china(ctx):
     await ctx.send("https://cdn.discordapp.com/attachments/792480412647161906/848385363709526046/video0_1.mp4")
 
 
+@client.command()
+async def translate(ctx, *, thingtotranslate):
+    result = translator.translate(text=f'{thingtotranslate}', src='auto', dest='en')
+    embed = discord.Embed(
+        title="translation",
+        color=discord.Colour.orange()
+    )
+
+    embed.set_footer(text="Note: This is not 100% correct so dont expect it to be exactly that")
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
+    embed.add_field(name="Original text", value=thingtotranslate)
+    embed.add_field(name="Translated text", value=result.text)
+
+    if result is not None:
+        await ctx.send(embed=embed)
+
+
+@client.command()
+async def translate_from(ctx, source, desti, *, thingtotranslate):
+    result = translator.translate(text=f'{thingtotranslate}', src=f'{source}', dest=f'{desti}')
+    embed = discord.Embed(
+        title="translation",
+        color=discord.Colour.orange()
+    )
+
+    embed.set_footer(text="Note: This is not 100% correct so dont expect it to be exactly that")
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
+    embed.add_field(name="Original text", value=thingtotranslate)
+    embed.add_field(name="Translated text", value=result.text)
+
+    if result is not None:
+        await ctx.send(embed=embed)
+
+
 with open("token.txt") as reader:
     TOKEN = reader.read()
 
 client.run(TOKEN)
-
