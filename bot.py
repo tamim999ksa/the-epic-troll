@@ -90,7 +90,7 @@ async def addcc(ctx, thing, *, thingtosend):
 
 @client.command()
 async def removecc(ctx, *, thingtoremove):
-    command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE  CUSTOMCOMMAND = '{thingtoremove}' """
+    command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE  CUSTOMCOMMAND = {thingtoremove}"""
     cursor.execute(command4)
     connection.commit()
     result = cursor.fetchall()
@@ -140,8 +140,8 @@ async def translate(ctx, *, thingtotranslate):
 
     embed.set_footer(text="Note: This is not 100% correct so dont expect it to be exactly that")
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
-    embed.add_field(name="Original text", value=thingtotranslate)
-    embed.add_field(name="Translated text", value=result.text)
+    embed.add_field(name=f"From {result.src}", value=thingtotranslate)
+    embed.add_field(name=f"To {result.dest}", value=result.text)
 
     if result is not None:
         await ctx.send(embed=embed)
@@ -157,8 +157,8 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
 
     embed.set_footer(text="Note: This is not 100% correct so dont expect it to be exactly that")
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
-    embed.add_field(name="Original text", value=thingtotranslate)
-    embed.add_field(name="Translated text", value=result.text)
+    embed.add_field(name=f"From {result.src}", value=thingtotranslate)
+    embed.add_field(name=f"To {result.dest}", value=result.text)
 
     if result is not None:
         await ctx.send(embed=embed)
