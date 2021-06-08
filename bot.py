@@ -90,7 +90,7 @@ async def addcc(ctx, thing, *, thingtosend):
 
 @client.command()
 async def removecc(ctx, *, thingtoremove):
-    command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE  CUSTOMCOMMAND = {thingtoremove}"""
+    command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE  CUSTOMCOMMAND = '{thingtoremove}'"""
     cursor.execute(command4)
     connection.commit()
     result = cursor.fetchall()
