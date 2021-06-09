@@ -4,6 +4,7 @@ import sqlite3
 from discord.ext import commands
 import discord
 from googletrans import Translator
+from google_images_search import GoogleImagesSearch
 
 translator = Translator()
 
@@ -15,10 +16,19 @@ client = commands.Bot(command_prefix='t!')
 client.remove_command('help')
 
 
+main_guild = client.get_guild(828423940531159101)
+
+gis = GoogleImagesSearch('AIzaSyC-i2O27A8za7mh6y6S12EBP7yzIRtGGXo', '1622d7da3fd654f12')
+
+
+        
+
+
 @client.event
 async def on_ready():
+    main_channel = client.get_channel(828423941017042964)
     print("bot is yesing")
-
+    
 
 @client.command(name="t")
 async def s(ctx, ccname):
@@ -162,6 +172,29 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
 
     if result is not None:
         await ctx.send(embed=embed)
+
+@client.command()
+async def im(ctx, *, thingtosearxh):
+    _search_params = {
+    'q': f'{thingtosearxh}',
+    'num': 1,
+    'safe': 'high',
+    'fileType': 'jpg|gif|png',
+    'imgType': 'photo',
+    'imgSize': 'huge|icon|large|medium|small|xlarge|xxlarge',
+    'imgDominantColor': 'black|blue|brown|gray|green|pink|purple|teal|white|yellow',
+    'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
+}
+    embed = discord.Embed(
+          title="the inage",
+          color = discord.Color.orange()
+        )
+    gis.search(search_params=_search_params)
+img = gis.results()
+
+embed.set_image(url=img)
+
+ctx.send(embed=embed)
 
 
 with open("token.txt") as reader:
