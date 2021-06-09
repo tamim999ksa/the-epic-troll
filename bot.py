@@ -189,12 +189,14 @@ async def im(ctx, *, thingtosearxh):
           title="the inage",
           color = discord.Color.orange()
         )
-          gis.search(search_params=_search_params)
+gis.search(search_params=_search_params)
+
+        
 img = gis.results()
 
-     embed.set_image(url=img)
+embed.set_image(url=img)
 
-     ctx.send(embed=embed)
+ctx.send(embed=embed)
 
 
 with open("token.txt") as reader:
