@@ -15,6 +15,17 @@ cursor = connection.cursor()
 client = commands.Bot(command_prefix='t!')
 client.remove_command('help')
 
+search_params={
+    'q': f'trollface',
+    'num': 1,
+    'safe': 'high',
+    'fileType': 'jpg|gif|png',
+    'imgType': 'photo',
+    'imgSize': 'huge|icon|large|medium|small|xlarge|xxlarge',
+    'imgDominantColor': 'black|blue|brown|gray|green|pink|purple|teal|white|yellow',
+    'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
+}
+
 
 main_guild = client.get_guild(828423940531159101)
 
@@ -176,21 +187,12 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
 @client.command()
 async def im(ctx, *,thingtosearxh):
 
-       search_params={
-    'q': f'{thingtosearxh}',
-    'num': 1,
-    'safe': 'high',
-    'fileType': 'jpg|gif|png',
-    'imgType': 'photo',
-    'imgSize': 'huge|icon|large|medium|small|xlarge|xxlarge',
-    'imgDominantColor': 'black|blue|brown|gray|green|pink|purple|teal|white|yellow',
-    'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
-}
-
-embed = discord.Embed(
+       
+       embed = discord.Embed(
           title="the inage",
           color = discord.Color.orange()
         )
+
 gis.search(search_params=_search_params)
 
 img = gis.results()
