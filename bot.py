@@ -15,15 +15,15 @@ cursor = connection.cursor()
 client = commands.Bot(command_prefix='t!')
 client.remove_command('help')
 
-_search_params={
-    'q': f'trollface',
+_search_params = {
+    'q': 'trollface',
     'num': 1,
-    'safe': 'high',
+    'safe': 'medium',
     'fileType': 'jpg|gif|png',
-    'imgType': 'photo',
-    'imgSize': 'medium',
-    'imgDominantColor': 'black',
-    'rights': 'cc_publicdomain'
+    'imgType': 'clipart|face|lineart|news|photo',
+    'imgSize': 'huge|icon|large|medium|small|xlarge|xxlarge',
+    'imgDominantColor': 'black|blue|brown|gray|green|pink|purple|teal|white|yellow',
+    'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
 }
 
 
