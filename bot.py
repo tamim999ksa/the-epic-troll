@@ -15,7 +15,7 @@ cursor = connection.cursor()
 client = commands.Bot(command_prefix='t!')
 client.remove_command('help')
 
-search_params={
+_search_params={
     'q': f'trollface',
     'num': 1,
     'safe': 'high',
