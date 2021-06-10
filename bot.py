@@ -174,8 +174,9 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
         await ctx.send(embed=embed)
 
 @client.command()
-async def im(ctx, *, thingtosearxh):
-    _search_params = {
+async def im(ctx, *,thingtosearxh):
+
+       search_params={
     'q': f'{thingtosearxh}',
     'num': 1,
     'safe': 'high',
@@ -185,13 +186,13 @@ async def im(ctx, *, thingtosearxh):
     'imgDominantColor': 'black|blue|brown|gray|green|pink|purple|teal|white|yellow',
     'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
 }
-    embed = discord.Embed(
+
+embed = discord.Embed(
           title="the inage",
           color = discord.Color.orange()
         )
 gis.search(search_params=_search_params)
 
-        
 img = gis.results()
 
 embed.set_image(url=img)
