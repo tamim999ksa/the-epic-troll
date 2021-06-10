@@ -21,9 +21,9 @@ _search_params={
     'safe': 'high',
     'fileType': 'jpg|gif|png',
     'imgType': 'photo',
-    'imgSize': 'huge|icon|large|medium|small|xlarge|xxlarge',
-    'imgDominantColor': 'black|blue|brown|gray|green|pink|purple|teal|white|yellow',
-    'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
+    'imgSize': 'medium',
+    'imgDominantColor': 'black',
+    'rights': 'cc_publicdomain'
 }
 
 
