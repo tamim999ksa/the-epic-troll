@@ -192,7 +192,7 @@ async def im(ctx, *,thingtosearxh):
         )
 
         img = gis.search(search_params=_search_params)
-        print(img)
+        print(img.results())
          
 
         embed.set_image(url=img)
