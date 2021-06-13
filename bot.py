@@ -21,7 +21,7 @@ _search_params = {
     'safe': 'off',
     'fileType': 'jpg|gif|png',
     'imgType': 'photo',
-    'imgSize': 'medium',
+    'imgSize': 'huge',
     'rights': 'cc_publicdomain'
 }
 
