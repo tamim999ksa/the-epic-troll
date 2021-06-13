@@ -197,7 +197,7 @@ async def im(ctx, *,thingtosearxh):
 
         embed.set_image(url=img)
 
-        ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
 
 with open("token.txt") as reader:
