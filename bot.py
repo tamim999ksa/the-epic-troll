@@ -18,10 +18,10 @@ client.remove_command('help')
 _search_params = {
     'q': 'trollface',
     'num': 1,
-    'safe': 'high',
+    'safe': 'medium',
     'fileType': 'jpg|gif|png',
     'imgType': 'photo',
-    'imgSize': 'MEDIUM',
+    'imgSize': 'medium',
     'imgDominantColor': 'black',
     'rights': 'cc_publicdomain'
 }
@@ -187,19 +187,18 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
 @client.command()
 async def im(ctx, *,thingtosearxh):
 
-       
-       embed = discord.Embed(
+        embed = discord.Embed(
           title="the inage",
           color = discord.Color.orange()
         )
 
-gis.search(search_params=_search_params)
+        gis.search(search_params=_search_params)
 
-img = gis.results()
+        img = gis.results()
 
-embed.set_image(url=img)
+        embed.set_image(url=img)
 
-ctx.send(embed=embed)
+        ctx.send(embed=embed)
 
 
 with open("token.txt") as reader:
