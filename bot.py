@@ -20,10 +20,10 @@ _search_params = {
     'num': 1,
     'safe': 'medium',
     'fileType': 'jpg|gif|png',
-    'imgType': 'clipart|face|lineart|news|photo',
-    'imgSize': 'huge|icon|large|medium|small|xlarge|xxlarge',
-    'imgDominantColor': 'black|blue|brown|gray|green|pink|purple|teal|white|yellow',
-    'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
+    'imgType': 'photo',
+    'imgSize': 'medium',
+    'imgDominantColor': 'black',
+    'rights': 'cc_publicdomain'
 }
 
 
