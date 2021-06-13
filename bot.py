@@ -191,9 +191,9 @@ async def im(ctx, *,thingtosearxh):
           color = discord.Color.orange()
         )
 
-        gis.search(search_params=_search_params)
+        img = gis.search(search_params=_search_params)
 
-        img = gis.results()
+         
 
         embed.set_image(url=img)
 
