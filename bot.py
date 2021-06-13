@@ -18,11 +18,10 @@ client.remove_command('help')
 _search_params = {
     'q': 'trollface',
     'num': 1,
-    'safe': 'medium',
+    'safe': 'off',
     'fileType': 'jpg|gif|png',
     'imgType': 'photo',
     'imgSize': 'medium',
-    'imgDominantColor': 'black',
     'rights': 'cc_publicdomain'
 }
 
