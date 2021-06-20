@@ -208,7 +208,7 @@ async def txt2img(ctx, *, thingtoput):
         r = requests.post(
            "https://api.deepai.org/api/text2img",
         data={
-        'text': 'true',
+        'text': f'{thingtoput}',
       },
         headers={'api-key': 'd832cc77-92fb-4a09-895f-b9c1ec4a67b0'}
 )
