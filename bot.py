@@ -5,6 +5,7 @@ from discord.ext import commands
 import discord
 from googletrans import Translator
 from google_images_search import GoogleImagesSearch
+import requests
 
 translator = Translator()
 
@@ -198,6 +199,20 @@ async def im(ctx, *,thingtosearxh):
         embed.set_image(url=img)
 
         await ctx.send(embed=embed)
+
+
+@client.command()
+async def txt2img(ctx, *, thingtoput):
+        
+
+        r = requests.post(
+           "https://api.deepai.org/api/text2img",
+        data={
+        'text': 'true',
+      },
+        headers={'api-key': 'd832cc77-92fb-4a09-895f-b9c1ec4a67b0'}
+)
+        await ctx.send(r.json()['output_url'])
 
 
 with open("token.txt") as reader:
