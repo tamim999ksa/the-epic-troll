@@ -6,46 +6,56 @@ import discord
 from googletrans import Translator
 from google_images_search import GoogleImagesSearch
 import requests
+from PIL import Image
+from io import BytesIO
+import psycopg2
+import asyncpg
+import os
+import json
 
-translator = Translator()
 
-connection = sqlite3.connect('customcommands.db')
+dbname = 'dffop1b5kn2eng'
+dbhost = 'ec2-54-243-92-68.compute-1.amazonaws.com'
+dbuser = 'lmpnevdicnobhu'
+dbpass = 'ead5820cafefeb57f830c9d11ccdd08d6f98a4f275f8ef48a373d29571140b10'
+
+connection = psycopg2.connect(dbname=dbname, user=dbuser, password=dbpass, host=dbhost)
 
 cursor = connection.cursor()
+
+translator = Translator()
 
 client = commands.Bot(command_prefix='t!')
 client.remove_command('help')
 
-_search_params = {
-    'q': 'trollface',
-    'num': 1,
-    'safe': 'off',
-    'fileType': 'jpg|gif|png',
-    'imgType': 'photo',
-    'imgSize': 'HUGE',
-    'rights': 'cc_publicdomain'
-}
-
+my_bytes_io = BytesIO()
 
 main_guild = client.get_guild(828423940531159101)
 
 gis = GoogleImagesSearch('AIzaSyC-i2O27A8za7mh6y6S12EBP7yzIRtGGXo', '1622d7da3fd654f12')
 
 
-        
-
-
 @client.event
 async def on_ready():
     main_channel = client.get_channel(828423941017042964)
     print("bot is yesing")
-    
+
 
 @client.command(name="t")
 async def s(ctx, ccname):
-    command5 = f"""SELECT DISTINCT CUSTOMCOMMAND FROM CUSTOMCOMMANDS  WHERE CUSTOMCOMMAND = ("{ccname}")"""
+    command5 = f"""SELECT
+	CUSTOMCOMMAND
+FROM
+	CUSTOMCOMMANDS
+WHERE
+	CUSTOMCOMMAND = '{ccname}'"""
     cursor.execute(command5)
-    command6 = f"""SELECT WHATWILLCCSEND FROM CUSTOMCOMMANDS WHERE CUSTOMCOMMAND LIKE '%{ccname}%'"""
+    command6 = f"""SELECT
+	WHATWILLCCSEND
+FROM
+	CUSTOMCOMMANDS
+WHERE 
+	CUSTOMCOMMAND LIKE '{ccname}%';"""
     cursor.execute(command6)
     result = cursor.fetchone()
     if result is not None:
@@ -98,25 +108,25 @@ async def allcc(ctx):
 
 @client.command()
 async def addcc(ctx, thing, *, thingtosend):
+    print(thing, thingtosend)
     command1 = """CREATE TABLE IF NOT EXISTS
     CUSTOMCOMMANDS(
     CUSTOMCOMMAND  TEXT  PRIMARY KEY NOT NULL,
-    WHATWILLCCSEND TEXT              NOT NULL
-    )"""
+    WHATWILLCCSEND TEXT              NOT NULL)"""
     cursor.execute(command1)
-    cursor.execute(f'INSERT INTO CUSTOMCOMMANDs VALUES ("{thing}", "{thingtosend}")')
+    cursor.execute(f"INSERT INTO CUSTOMCOMMANDS (CUSTOMCOMMAND, WHATWILLCCSEND) VALUES ('{thing}','{thingtosend}');")
     connection.commit()
     await ctx.send("added " + thing + " in database")
 
 
 @client.command()
 async def removecc(ctx, *, thingtoremove):
-    command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE  CUSTOMCOMMAND = {thingtoremove}"""
+    command4 = f"""DELETE FROM CUSTOMCOMMANDS
+WHERE CUSTOMCOMMAND = '{thingtoremove}';"""
     cursor.execute(command4)
-    connection.commit()
     result = cursor.fetchall()
-    if result is not None:
-        await ctx.send(f"deleted {result} from database")
+    connection.commit()
+    await ctx.send(f"deleted {thingtoremove} from database")
 
 
 @client.command()
@@ -139,7 +149,8 @@ async def help(ctx):
                     inline=False)
     embed.add_field(name="Status", value="t!ping")
     embed.add_field(name="Other", value="t!john_china")
-    embed.add_field(name="Translation", value="t!translate {untranslated text} \nt!translate_from {from} {to} {untranslated text}")
+    embed.add_field(name="Translation",
+                    value="t!translate {untranslated text} \nt!translate_from {from} {to} {untranslated text}")
     embed.set_footer(text="yo mama so fat")
     embed.set_author(name=ctx.author.name)
 
@@ -184,38 +195,52 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
     if result is not None:
         await ctx.send(embed=embed)
 
+
 @client.command()
-async def im(ctx, *,thingtosearxh):
+async def im(ctx, *, thingtosearch):
+    _search_params = {
+        'q': f'{thingtosearch}',
+        'num': 1,
+        'safe': 'off',
+        'fileType': 'jpg|gif|png',
+        'imgType': 'photo',
+        'imgSize': 'HUGE',
+        'rights': 'cc_publicdomain'
+    }
 
-        embed = discord.Embed(
-          title="the inage",
-          color = discord.Color.orange()
-        )
+    gis.search(search_params=_search_params)
+    for image in gis.results():
+        my_bytes_io.seek(0)
 
-        img = gis.search(search_params=_search_params)
-        print(img.results())
-         
+        raw_image_data = image.get_raw_data()
 
-        embed.set_image(url=img)
+        image.copy_to(my_bytes_io, raw_image_data)
 
-        await ctx.send(embed=embed)
+        my_bytes_io.seek(0)
+
+        temp_img = Image.open(my_bytes_io)
+
+        temp_img.show()
+        await ctx.send(file=temp_img + ".jpg")
 
 
 @client.command()
 async def txt2img(ctx, *, thingtoput):
-        
-
-        r = requests.post(
-           "https://api.deepai.org/api/text2img",
+    r = requests.post(
+        "https://api.deepai.org/api/text2img",
         data={
-        'text': f'{thingtoput}',
-      },
+            'text': f'{thingtoput}',
+        },
         headers={'api-key': 'd832cc77-92fb-4a09-895f-b9c1ec4a67b0'}
-)
-        await ctx.send(r.json()['output_url'])
+    )
+    await ctx.send(r.json()['output_url'])
 
 
-with open("token.txt") as reader:
-    TOKEN = reader.read()
+#@client.command()
+#async def punishment(ctx):
+#   punishments = open("punishments.json")
+
+with open("secret") as f:
+    TOKEN = f.read()
 
 client.run(TOKEN)
