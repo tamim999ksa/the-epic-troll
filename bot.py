@@ -12,7 +12,7 @@ import psycopg2
 import asyncpg
 import os
 import json
-
+from psycopg2 import DatabaseError
 
 dbname = 'dffop1b5kn2eng'
 dbhost = 'ec2-54-243-92-68.compute-1.amazonaws.com'
@@ -43,23 +43,26 @@ async def on_ready():
 
 @client.command(name="t")
 async def s(ctx, ccname):
-    command5 = f"""SELECT
-	CUSTOMCOMMAND
-FROM
-	CUSTOMCOMMANDS
-WHERE
-	CUSTOMCOMMAND = '{ccname}'"""
-    cursor.execute(command5)
-    command6 = f"""SELECT
-	WHATWILLCCSEND
-FROM
-	CUSTOMCOMMANDS
-WHERE 
-	CUSTOMCOMMAND LIKE '{ccname}%';"""
-    cursor.execute(command6)
-    result = cursor.fetchone()
-    if result is not None:
-        await ctx.send(result[0].replace("(,)", ""))
+    try:
+        command5 = f"""SELECT
+	    CUSTOMCOMMAND
+    FROM    
+	    CUSTOMCOMMANDS
+   WHERE
+	    CUSTOMCOMMAND = '{ccname}'"""
+        cursor.execute(command5)
+        command6 = f"""SELECT
+	    WHATWILLCCSEND
+    FROM    
+	    CUSTOMCOMMANDS
+    WHERE 
+	    CUSTOMCOMMAND LIKE '{ccname}%';"""
+        cursor.execute(command6)
+        result = cursor.fetchone()
+        if result is not None:
+            await ctx.send(result[0].replace("(,)", ""))
+    except DatabaseError:
+        cursor.execute("rollback;")
 
 
 @client.command(name='eval', pass_context=True)
@@ -90,51 +93,64 @@ async def ping(ctx):
 
 @client.command()
 async def allcc(ctx):
-    cursor.execute("SELECT CUSTOMCOMMAND FROM CUSTOMCOMMANDS")
-    allccs = cursor.fetchall()
-    embed = discord.Embed(
-        title="All Custom Commands",
-        description=allccs,
-        color=discord.Colour.orange()
-    )
+    try:
+        cursor.execute("SELECT CUSTOMCOMMAND FROM CUSTOMCOMMANDS")
+        allccs = cursor.fetchall()
+        embed = discord.Embed(
+            title="All Custom Commands",
+            description=allccs,
+            color=discord.Colour.orange()
+        )
 
-    embed.set_footer(text=f"Number of custom commands is: {len(allccs)}")
-    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
-    embed.set_thumbnail(
-        url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
+        embed.set_footer(text=f"Number of custom commands is: {len(allccs)}")
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
+        embed.set_thumbnail(
+            url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
 
-    await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
+    except DatabaseError:
+        cursor.execute("rollback;")
 
 
 @client.command()
 async def addcc(ctx, thing, *, thingtosend):
     print(thing, thingtosend)
-    command1 = """CREATE TABLE IF NOT EXISTS
-    CUSTOMCOMMANDS(
-    CUSTOMCOMMAND  TEXT  PRIMARY KEY NOT NULL,
-    WHATWILLCCSEND TEXT              NOT NULL)"""
-    cursor.execute(command1)
-    cursor.execute(f"INSERT INTO CUSTOMCOMMANDS (CUSTOMCOMMAND, WHATWILLCCSEND) VALUES ('{thing}','{thingtosend}');")
-    connection.commit()
-    await ctx.send("added " + thing + " in database")
+    try:
+        command1 = """CREATE TABLE IF NOT EXISTS
+        CUSTOMCOMMANDS(
+        CUSTOMCOMMAND  TEXT  PRIMARY KEY NOT NULL,
+        WHATWILLCCSEND TEXT              NOT NULL)"""
+        cursor.execute(command1)
+        cursor.execute(
+            f"INSERT INTO CUSTOMCOMMANDS (CUSTOMCOMMAND, WHATWILLCCSEND) VALUES ('{thing}','{thingtosend}');")
+        connection.commit()
+        await ctx.send("added " + thing + " in database")
+    except DatabaseError:
+        cursor.execute("rollback;")
 
 
 @client.command()
 async def removecc(ctx, *, thingtoremove):
-    command4 = f"""DELETE FROM CUSTOMCOMMANDS
-WHERE CUSTOMCOMMAND = '{thingtoremove}';"""
-    cursor.execute(command4)
-    result = cursor.fetchall()
-    connection.commit()
-    await ctx.send(f"deleted {thingtoremove} from database")
+    try:
+        command4 = f"""DELETE FROM CUSTOMCOMMANDS
+        WHERE CUSTOMCOMMAND = '{thingtoremove}';"""
+        cursor.execute(command4)
+        result = cursor.fetchall()
+        connection.commit()
+        await ctx.send(f"deleted {thingtoremove} from database")
+    except DatabaseError:
+        cursor.execute("rollback;")
 
 
 @client.command()
 @commands.is_owner()
 async def removeallcc(ctx):
-    cursor.execute("DELETE FROM CUSTOMCOMMANDS")
-    connection.commit()
-    await ctx.send("deleted every custom command from database")
+    try:
+        cursor.execute("DELETE FROM CUSTOMCOMMANDS")
+        connection.commit()
+        await ctx.send("deleted every custom command from database")
+    except DatabaseError:
+        cursor.execute("rollback;")
 
 
 @client.group(invoke_without_command=True)
@@ -198,30 +214,14 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
 
 @client.command()
 async def im(ctx, *, thingtosearch):
-    _search_params = {
-        'q': f'{thingtosearch}',
-        'num': 1,
-        'safe': 'off',
-        'fileType': 'jpg|gif|png',
-        'imgType': 'photo',
-        'imgSize': 'HUGE',
-        'rights': 'cc_publicdomain'
-    }
-
-    gis.search(search_params=_search_params)
-    for image in gis.results():
-        my_bytes_io.seek(0)
-
-        raw_image_data = image.get_raw_data()
-
-        image.copy_to(my_bytes_io, raw_image_data)
-
-        my_bytes_io.seek(0)
-
-        temp_img = Image.open(my_bytes_io)
-
-        temp_img.show()
-        await ctx.send(file=temp_img + ".jpg")
+    r = requests.post(
+        "https://vision.googleapis.com/v1/images:annotate",
+        data={
+            'q': f'{thingtosearch}'
+        },
+        headers={"key": 'AIzaSyDv-sZGap6bWFTu4fcJTAiUidUoAceRS3A'}
+    )
+    print(r.content)
 
 
 @client.command()
@@ -236,8 +236,8 @@ async def txt2img(ctx, *, thingtoput):
     await ctx.send(r.json()['output_url'])
 
 
-#@client.command()
-#async def punishment(ctx):
+# @client.command()
+# async def punishment(ctx):
 #   punishments = open("punishments.json")
 
 with open("secret") as f:
