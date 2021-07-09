@@ -357,6 +357,6 @@ async def txt2img(ctx, *, thingtoput):
 #   punishments = open("punishments.json")
 
 
-TOKEN = os.enviorn["funnytoken"]
+TOKEN = os.environ["funnytoken"]
 
 client.run(TOKEN)
