@@ -12,6 +12,7 @@ import psycopg2
 import asyncpg
 import os
 import json
+from google_images_download import google_images_download
 from psycopg2 import DatabaseError
 
 dbname = 'dffop1b5kn2eng'
@@ -25,6 +26,14 @@ cursor = connection.cursor()
 
 translator = Translator()
 
+edited_messages_list = []
+edited_messages_usernames = []
+edited_messages_avatarurl = []
+deleted_messages_list = []
+deleted_messages_avatarurl = []
+deleted_messages_usernames = []
+revers = False
+
 client = commands.Bot(command_prefix='t!')
 client.remove_command('help')
 
@@ -32,13 +41,40 @@ my_bytes_io = BytesIO()
 
 main_guild = client.get_guild(828423940531159101)
 
-gis = GoogleImagesSearch('AIzaSyC-i2O27A8za7mh6y6S12EBP7yzIRtGGXo', '1622d7da3fd654f12')
+gis = GoogleImagesSearch('AIzaSyD-qS7dsHo4ZdWkFxFpjykPd_kstSqUgBk', '957703df971c2df44')
 
 
 @client.event
 async def on_ready():
     main_channel = client.get_channel(828423941017042964)
     print("bot is yesing")
+
+
+@client.event
+async def on_message_edit(before, after, revers=False):
+    if before.author == client.user:
+        return
+    if before.author.bot: return
+    if before.content == after.content: return
+    edited_messages_list.append(before.content)
+    edited_messages_usernames.append(before.author.name)
+    edited_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
+    print(before.author.name)
+    print("added " + before.content + " In table")
+    print(list(edited_messages_list))
+
+@client.event
+async def on_message_delete(before):
+    if before.author == client.user:
+        return
+    if before.author.bot: return
+    deleted_messages_list.append(before.content)
+    deleted_messages_usernames.append(before.author.name)
+    deleted_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
+    print(before.author.name)
+    print("added " + before.content + " In table")
+    print(list(deleted_messages_list))
+
 
 
 @client.command(name="t")
@@ -214,14 +250,94 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
 
 @client.command()
 async def im(ctx, *, thingtosearch):
-    r = requests.post(
-        "https://vision.googleapis.com/v1/images:annotate",
-        data={
-            'q': f'{thingtosearch}'
-        },
-        headers={"key": 'AIzaSyDv-sZGap6bWFTu4fcJTAiUidUoAceRS3A'}
+    _search_params = {
+        'q': f'{thingtosearch}',
+        'num': 1,
+        'safe': 'off',
+        'fileType': 'jpg',
+        'imgType': 'photo',
+        'imgSize': 'imgSizeUndefined',
+        'imgDominantColor': 'black',
+        'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
+    }
+
+    thing = gis.search(search_params=_search_params)
+    for image in gis.results():
+        downloaded_result = image.download(r'C:\Users\tamim\PycharmProjects\the epic troll')
+        with open("testimage.jpg", "wb") as f:
+            f.write(downloaded_result)
+        await ctx.send(file=r'testimage.jpg')
+
+
+@client.command()
+async def esnipe(ctx):
+    embed = discord.Embed(
+        title="Press the left arrow reaction to go to the last edit",
+        color=discord.Color.orange()
     )
-    print(r.content)
+    msg = await ctx.send(embed=embed)
+    await msg.add_reaction("⬅️")
+
+
+    def check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) == "⬅️"
+
+    def check2(reaction, user):
+        return user == ctx.author and str(reaction.emoji) == "➡️"
+
+    while edited_messages_list:
+        for i in range(len(edited_messages_list) - 1, -1, -1):
+            await client.wait_for('reaction_add', timeout=300, check=check)
+
+            try:
+                await msg.edit(embed=discord.Embed(
+                color=discord.Color.orange()
+                )
+                       .add_field(name="Unedited message", value=f'{edited_messages_list[i]}')
+                       .set_author(name=f"{edited_messages_usernames[i]}", icon_url=f"{edited_messages_avatarurl[i]}")
+                       .set_footer(text="Click the left arrow to go to an older edit and right arrow for newer (partily works)"))
+            except IndexError:
+                await ctx.send("there are no more edits left")
+                break
+
+            except TimeoutError:
+                await msg.edit("timed out please run command again")
+
+@client.command()
+async def snipe(ctx):
+    embed = discord.Embed(
+        title="Press the left arrow reaction to go to the last deleted message",
+        color=discord.Color.orange()
+    )
+    msg = await ctx.send(embed=embed)
+    await msg.add_reaction("⬅️")
+
+
+    def check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) == "⬅️"
+
+    def check2(reaction, user):
+        return user == ctx.author and str(reaction.emoji) == "➡️"
+
+    while deleted_messages_list:
+        for i in range(len(deleted_messages_list) - 1, -1, -1):
+            await client.wait_for('reaction_add', timeout=300, check=check)
+
+            try:
+                await msg.edit(embed=discord.Embed(
+                color=discord.Color.orange()
+                )
+                       .add_field(name="Deleted message", value=f'{deleted_messages_list[i]}')
+                       .set_author(name=f"{deleted_messages_usernames[i]}", icon_url=f"{deleted_messages_avatarurl[i]}")
+                       .set_footer(text="Click the left arrow to go to an older deleted message and right arrow for newer (partily works)"))
+            except IndexError:
+                await ctx.send("there are no more deleted messages left")
+                break
+
+            except TimeoutError:
+                await msg.edit("timed out please run command again")
+            except discord.HTTPException:
+                edited_messages_list.remove(i)
 
 
 @client.command()
