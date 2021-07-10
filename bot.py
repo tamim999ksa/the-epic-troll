@@ -14,6 +14,7 @@ import os
 import json
 from google_images_download import google_images_download
 from psycopg2 import DatabaseError
+import asyncio
 
 dbname = 'dffop1b5kn2eng'
 dbhost = 'ec2-54-243-92-68.compute-1.amazonaws.com'
@@ -300,7 +301,7 @@ async def esnipe(ctx):
                 await ctx.send("there are no more edits left")
                 break
 
-            except TimeoutError:
+            except asyncio.TimeoutError:
                 await msg.edit("timed out please run command again")
 
 @client.command()
@@ -334,7 +335,7 @@ async def snipe(ctx):
                 await ctx.send("there are no more deleted messages left")
                 break
 
-            except TimeoutError:
+            except asyncio.TimeoutError:
                 await msg.edit("timed out please run command again")
             except discord.HTTPException:
                 edited_messages_list.remove(i)
