@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import math
 import sqlite3
@@ -14,7 +15,6 @@ import os
 import json
 from google_images_download import google_images_download
 from psycopg2 import DatabaseError
-import asyncio
 
 dbname = 'dffop1b5kn2eng'
 dbhost = 'ec2-54-243-92-68.compute-1.amazonaws.com'
@@ -27,6 +27,7 @@ cursor = connection.cursor()
 
 translator = Translator()
 
+
 edited_messages_list = []
 edited_messages_usernames = []
 edited_messages_avatarurl = []
@@ -35,7 +36,7 @@ deleted_messages_avatarurl = []
 deleted_messages_usernames = []
 revers = False
 
-client = commands.Bot(command_prefix='t!')
+client = commands.Bot(command_prefix='test!')
 client.remove_command('help')
 
 my_bytes_io = BytesIO()
@@ -57,6 +58,7 @@ async def on_message_edit(before, after, revers=False):
         return
     if before.author.bot: return
     if before.content == after.content: return
+    if before.attachments: return
     edited_messages_list.append(before.content)
     edited_messages_usernames.append(before.author.name)
     edited_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
@@ -69,6 +71,7 @@ async def on_message_delete(before):
     if before.author == client.user:
         return
     if before.author.bot: return
+    if before.attachments: return
     deleted_messages_list.append(before.content)
     deleted_messages_usernames.append(before.author.name)
     deleted_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
@@ -272,73 +275,89 @@ async def im(ctx, *, thingtosearch):
 
 @client.command()
 async def esnipe(ctx):
-    embed = discord.Embed(
-        title="Press the left arrow reaction to go to the last edit",
-        color=discord.Color.orange()
-    )
-    msg = await ctx.send(embed=embed)
-    await msg.add_reaction("⬅️")
+    guildid = str(ctx.guild.id)
+    userid = str(ctx.author.id)
+    previuspage = '⬅️'
+    nextpage = '➡️'
+    page = len(edited_messages_list)
+    first_time = True
+    msg = await ctx.send("Click the right arrow to go to the latest edit and the left arrow to go to the oldest")
+    await msg.add_reaction(previuspage)
+    await msg.add_reaction(nextpage)
 
+    def checkforreaction(reaction, user):
+        return str(user.id) == userid and str(reaction.emoji) in [previuspage, nextpage]
 
-    def check(reaction, user):
-        return user == ctx.author and str(reaction.emoji) == "⬅️"
+    loopclose = 0
+    while loopclose == 0:
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout=300, check=checkforreaction)
+            if reaction.emoji == nextpage:
+                if first_time:
+                    first_time = False
+                    page = len(edited_messages_list) - 1
+                    print(page)
+                else:
+                    page += 1
+            elif reaction.emoji == previuspage:
+                if first_time:
+                    first_time = False
+                    page = len(edited_messages_list) - len(edited_messages_list)
+                else:
+                    page -= 1
+            await msg.edit(embed=discord.Embed(color=discord.Color.orange()) .add_field(name="Unedited message:", value=edited_messages_list[page]) .set_author(name=edited_messages_usernames[page], icon_url=edited_messages_avatarurl[page]) .set_footer(text="press the right arrow to go to the next edit and the left arrow to go to the previous edit"))
 
-    def check2(reaction, user):
-        return user == ctx.author and str(reaction.emoji) == "➡️"
-
-    while edited_messages_list:
-        for i in range(len(edited_messages_list) - 1, -1, -1):
-            await client.wait_for('reaction_add', timeout=300, check=check)
-
-            try:
-                await msg.edit(embed=discord.Embed(
-                color=discord.Color.orange()
-                )
-                       .add_field(name="Unedited message", value=f'{edited_messages_list[i]}')
-                       .set_author(name=f"{edited_messages_usernames[i]}", icon_url=f"{edited_messages_avatarurl[i]}")
-                       .set_footer(text="Click the left arrow to go to an older edit and right arrow for newer (partily works)"))
-            except IndexError:
-                await ctx.send("there are no more edits left")
-                break
-
-            except asyncio.TimeoutError:
-                await msg.edit("timed out please run command again")
+        except asyncio.TimeoutError:
+            await ctx.send('timeout')
+            loopclose = 1
+        except IndexError:
+            await ctx.send("there are no more edits")
+            loopclose = 1
 
 @client.command()
 async def snipe(ctx):
-    embed = discord.Embed(
-        title="Press the left arrow reaction to go to the last deleted message",
-        color=discord.Color.orange()
-    )
-    msg = await ctx.send(embed=embed)
-    await msg.add_reaction("⬅️")
+    guildid = str(ctx.guild.id)
+    userid = str(ctx.author.id)
+    previuspage = '⬅️'
+    nextpage = '➡️'
+    page = len(edited_messages_list)
+    first_time = True
+    msg = await ctx.send("Click the right arrow to go to the latest deleted message and the left arrow to go to the oldest")
+    await msg.add_reaction(previuspage)
+    await msg.add_reaction(nextpage)
 
+    def checkforreaction(reaction, user):
+        return str(user.id) == userid and str(reaction.emoji) in [previuspage, nextpage]
 
-    def check(reaction, user):
-        return user == ctx.author and str(reaction.emoji) == "⬅️"
+    loopclose = 0
+    while loopclose == 0:
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout=300, check=checkforreaction)
+            if reaction.emoji == nextpage:
+                if first_time:
+                    first_time = False
+                    page = len(deleted_messages_list) - 1
+                    print(page)
+                else:
+                    page += 1
+            elif reaction.emoji == previuspage:
+                if first_time:
+                    first_time = False
+                    page = len(deleted_messages_list) - len(deleted_messages_list)
+                else:
+                    page -= 1
+            await msg.edit(embed=discord.Embed(color=discord.Color.orange()).add_field(name="Deleted message:",
+                                                                                       value=deleted_messages_list[
+                                                                                           page]).set_author(
+                name=deleted_messages_usernames[page], icon_url=deleted_messages_avatarurl[page]).set_footer(
+                text="press the right arrow to go to the next deleted message and the left arrow to go to the previous deleted messages"))
 
-    def check2(reaction, user):
-        return user == ctx.author and str(reaction.emoji) == "➡️"
-
-    while deleted_messages_list:
-        for i in range(len(deleted_messages_list) - 1, -1, -1):
-            await client.wait_for('reaction_add', timeout=300, check=check)
-
-            try:
-                await msg.edit(embed=discord.Embed(
-                color=discord.Color.orange()
-                )
-                       .add_field(name="Deleted message", value=f'{deleted_messages_list[i]}')
-                       .set_author(name=f"{deleted_messages_usernames[i]}", icon_url=f"{deleted_messages_avatarurl[i]}")
-                       .set_footer(text="Click the left arrow to go to an older deleted message and right arrow for newer (partily works)"))
-            except IndexError:
-                await ctx.send("there are no more deleted messages left")
-                break
-
-            except asyncio.TimeoutError:
-                await msg.edit("timed out please run command again")
-            except discord.HTTPException:
-                edited_messages_list.remove(i)
+        except asyncio.TimeoutError:
+            await ctx.send('timeout')
+            loopclose = 1
+        except IndexError:
+            await ctx.send("there are no more deleted messages")
+            loopclose = 1
 
 
 @client.command()
@@ -356,7 +375,6 @@ async def txt2img(ctx, *, thingtoput):
 # @client.command()
 # async def punishment(ctx):
 #   punishments = open("punishments.json")
-
 
 TOKEN = os.environ["funnytoken"]
 
