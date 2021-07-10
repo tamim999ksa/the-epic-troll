@@ -353,10 +353,10 @@ async def snipe(ctx):
                 text="press the right arrow to go to the next deleted message and the left arrow to go to the previous deleted messages"))
 
         except asyncio.TimeoutError:
-            await ctx.send('timeout')
+            await msg.edit('timeout')
             loopclose = 1
         except IndexError:
-            await ctx.send("there are no more deleted messages")
+            await msg.edit("there are no more deleted messages")
             loopclose = 1
 
 
