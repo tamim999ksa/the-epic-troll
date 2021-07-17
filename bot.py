@@ -425,7 +425,6 @@ async def draw(ctx, *, whattotype):
 # async def punishment(ctx):
 #   punishments = open("punishments.json")
 
-with open("secret") as f:
-    TOKEN = f.read()
+TOKEN = os.environ["funnytoken"]
 
 client.run(TOKEN)
