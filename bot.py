@@ -7,7 +7,7 @@ import discord
 from googletrans import Translator
 from google_images_search import GoogleImagesSearch
 import requests
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import psycopg2
 import asyncpg
@@ -15,6 +15,9 @@ import os
 import json
 from google_images_download import google_images_download
 from psycopg2 import DatabaseError
+import glob
+import uuid
+import shutil
 
 dbname = 'dffop1b5kn2eng'
 dbhost = 'ec2-54-243-92-68.compute-1.amazonaws.com'
@@ -79,30 +82,54 @@ async def on_message_delete(before):
     print("added " + before.content + " In table")
     print(list(deleted_messages_list))
 
-
-
-@client.command(name="t")
-async def s(ctx, ccname):
-    try:
-        command5 = f"""SELECT
+@client.event
+async def on_message(message):
+    if message.content == "t!": return
+    if message.content.startswith("t!"):
+        try:
+            command5 = f"""SELECT
 	    CUSTOMCOMMAND
     FROM    
 	    CUSTOMCOMMANDS
    WHERE
-	    CUSTOMCOMMAND = '{ccname}'"""
-        cursor.execute(command5)
-        command6 = f"""SELECT
+	    CUSTOMCOMMAND = '{message.content.replace("t!","")}'"""
+            cursor.execute(command5)
+            command6 = f"""SELECT
 	    WHATWILLCCSEND
     FROM    
 	    CUSTOMCOMMANDS
     WHERE 
-	    CUSTOMCOMMAND LIKE '{ccname}%';"""
-        cursor.execute(command6)
-        result = cursor.fetchone()
-        if result is not None:
-            await ctx.send(result[0].replace("(,)", ""))
-    except DatabaseError:
-        cursor.execute("rollback;")
+	    CUSTOMCOMMAND LIKE '{message.content.replace("t!","")}%';"""
+            cursor.execute(command6)
+            result = cursor.fetchone()
+            if result is not None:
+                await message.channel.send(result[0].replace("(,)", ""))
+        except DatabaseError:
+            cursor.execute("rollback;")
+    await client.process_commands(message=message)
+
+#@client.command(name="t")
+#async def s(ctx, ccname):
+#    try:
+#        command5 = f"""SELECT
+#	    CUSTOMCOMMAND
+#    FROM
+#	    CUSTOMCOMMANDS
+#   WHERE
+#	    CUSTOMCOMMAND = '{ccname}'"""
+#        cursor.execute(command5)
+#        command6 = f"""SELECT
+#	    WHATWILLCCSEND
+#    FROM
+#	    CUSTOMCOMMANDS
+#    WHERE
+#	    CUSTOMCOMMAND LIKE '{ccname}%';"""
+#        cursor.execute(command6)
+#        result = cursor.fetchone()
+#        if result is not None:
+#            await ctx.send(result[0].replace("(,)", ""))
+#    except DatabaseError:
+#        cursor.execute("rollback;")
 
 
 @client.command(name='eval', pass_context=True)
@@ -172,14 +199,12 @@ async def addcc(ctx, thing, *, thingtosend):
 @client.command()
 async def removecc(ctx, *, thingtoremove):
     try:
-        command4 = f"""DELETE FROM CUSTOMCOMMANDS
-        WHERE CUSTOMCOMMAND = '{thingtoremove}';"""
+        command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE CUSTOMCOMMAND LIKE '{thingtoremove}%';"""
         cursor.execute(command4)
-        result = cursor.fetchall()
         connection.commit()
         await ctx.send(f"deleted {thingtoremove} from database")
     except DatabaseError:
-        cursor.execute("rollback;")
+      cursor.execute("rollback;")
 
 
 @client.command()
@@ -268,9 +293,9 @@ async def im(ctx, *, thingtosearch):
     thing = gis.search(search_params=_search_params)
     for image in gis.results():
         downloaded_result = image.download(r'C:\Users\tamim\PycharmProjects\the epic troll')
-        with open("testimage.jpg", "wb") as f:
+        with open("testimasge.jpg", "wb") as f:
             f.write(downloaded_result)
-        await ctx.send(file=r'testimage.jpg')
+        await ctx.send(file=r'testsimage.jpg')
 
 
 @client.command()
@@ -353,10 +378,10 @@ async def snipe(ctx):
                 text="press the right arrow to go to the next deleted message and the left arrow to go to the previous deleted messages"))
 
         except asyncio.TimeoutError:
-            await msg.edit('timeout')
+            await ctx.send('timeout')
             loopclose = 1
         except IndexError:
-            await msg.edit("there are no more deleted messages")
+            await ctx.send("there are no more deleted messages")
             loopclose = 1
 
 
@@ -371,11 +396,36 @@ async def txt2img(ctx, *, thingtoput):
     )
     await ctx.send(r.json()['output_url'])
 
+@client.command()
+async def draw(ctx, *, whattotype):
+        try:
+            url = ctx.message.attachments[0].url
+
+
+        except IndexError:
+            await ctx.send("no attachements")
+        else:
+            if url[0:26] == "https://cdn.discordapp.com":
+                r = requests.get(url, stream=True)
+                imagename = str(uuid.uuid4()) + ".jpg"
+                with open(imagename , 'wb') as out_file:
+                    print("saving image" + imagename)
+                    shutil.copyfileobj(r.raw, out_file)
+                    font = ImageFont.truetype(r"C:\Users\tamim\PycharmProjects\the epic troll\impact.ttf", 30)
+                    im = Image.open(imagename)
+                    WIDTH, HEIGHT = im.size
+                    d = ImageDraw.Draw(im)
+                    width, height = d.textsize(whattotype, font=font)
+                    points = [(WIDTH - width // 2), (HEIGHT - height // 2)]
+                    d.text(((WIDTH - width)/2 + 30,(HEIGHT - height)/2 - 200), whattotype, fill="white", anchor="mt", font=font)
+                    test_image = im.save("testimage.jpg", "JPEG")
+                    await ctx.send(file=discord.File("testimage.jpg"))
 
 # @client.command()
 # async def punishment(ctx):
 #   punishments = open("punishments.json")
 
-TOKEN = os.environ["funnytoken"]
+with open("secret") as f:
+    TOKEN = f.read()
 
 client.run(TOKEN)
