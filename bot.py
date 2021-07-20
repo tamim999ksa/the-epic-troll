@@ -333,7 +333,6 @@ async def esnipe(ctx):
             await msg.edit(embed=discord.Embed(color=discord.Color.orange()) .add_field(name="Unedited message:", value=edited_messages_list[page]) .set_author(name=edited_messages_usernames[page], icon_url=edited_messages_avatarurl[page]) .set_footer(text="press the right arrow to go to the next edit and the left arrow to go to the previous edit"))
 
         except asyncio.TimeoutError:
-            await ctx.send('timeout')
             loopclose = 1
         except IndexError:
             await ctx.send("there are no more edits")
@@ -378,7 +377,6 @@ async def snipe(ctx):
                 text="press the right arrow to go to the next deleted message and the left arrow to go to the previous deleted messages"))
 
         except asyncio.TimeoutError:
-            await ctx.send('timeout')
             loopclose = 1
         except IndexError:
             await ctx.send("there are no more deleted messages")
