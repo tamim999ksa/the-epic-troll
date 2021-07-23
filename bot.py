@@ -71,13 +71,17 @@ async def on_message_edit(before, after, revers=False):
 
 @client.event
 async def on_message_delete(before):
-    if before.author == client.user:
+        if before.author == client.user:
         return
     if before.author.bot: return
-    if before.attachments: return
-    deleted_messages_list.append(before.content)
-    deleted_messages_usernames.append(before.author.name)
-    deleted_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
+    if before.attachments:
+        deleted_messages_list.append(before.attachments[0].url)
+        deleted_messages_usernames.append(before.author.name)
+        deleted_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
+    else:
+        deleted_messages_list.append(before.content)
+        deleted_messages_usernames.append(before.author.name)
+        deleted_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
     print(before.author.name)
     print("added " + before.content + " In table")
     print(list(deleted_messages_list))
