@@ -57,8 +57,7 @@ async def on_ready():
 
 @client.event
 async def on_message_edit(before, after, revers=False):
-    if before.author == client.user:
-        return
+    if before.author == client.user: return
     if before.author.bot: return
     if before.content == after.content: return
     if before.attachments: return
