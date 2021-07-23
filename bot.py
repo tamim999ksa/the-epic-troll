@@ -70,8 +70,7 @@ async def on_message_edit(before, after, revers=False):
 
 @client.event
 async def on_message_delete(before):
-        if before.author == client.user:
-        return
+    if before.author == client.user: return
     if before.author.bot: return
     if before.attachments:
         deleted_messages_list.append(before.attachments[0].url)
