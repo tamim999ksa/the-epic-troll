@@ -39,7 +39,7 @@ deleted_messages_avatarurl = []
 deleted_messages_usernames = []
 revers = False
 
-client = commands.Bot(command_prefix='test!')
+client = commands.Bot(command_prefix='t!')
 client.remove_command('help')
 
 my_bytes_io = BytesIO()
