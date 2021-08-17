@@ -39,7 +39,7 @@ deleted_messages_avatarurl = []
 deleted_messages_usernames = []
 revers = False
 
-client = commands.Bot(command_prefix='t!')
+client = commands.Bot(command_prefix='test!')
 client.remove_command('help')
 
 my_bytes_io = BytesIO()
@@ -200,14 +200,16 @@ async def addcc(ctx, thing, *, thingtosend):
 
 @client.command()
 async def removecc(ctx, *, thingtoremove):
-    try:
-        command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE CUSTOMCOMMAND LIKE '{thingtoremove}%';"""
-        cursor.execute(command4)
-        connection.commit()
-        await ctx.send(f"deleted {thingtoremove} from database")
-    except DatabaseError:
-      cursor.execute("rollback;")
-
+    if ctx.author.guild_permissions.manage_messages or ctx.author.id == 756504591725756537:
+        try:
+            command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE CUSTOMCOMMAND LIKE '{thingtoremove}%';"""
+            cursor.execute(command4)
+            connection.commit()
+            await ctx.send(f"deleted {thingtoremove} from database")
+        except DatabaseError:
+            cursor.execute("rollback;")
+    else:
+        await ctx.send("you do not have the required premissions to remove a custom command. please tell someone who has manage messages perms to delete it and give a good reason to why")
 
 @client.command()
 @commands.is_owner()
@@ -424,6 +426,7 @@ async def draw(ctx, *, whattotype):
 # @client.command()
 # async def punishment(ctx):
 #   punishments = open("punishments.json")
+
 
 TOKEN = os.environ["funnytoken"]
 
