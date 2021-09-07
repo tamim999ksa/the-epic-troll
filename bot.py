@@ -56,7 +56,7 @@ async def on_ready():
 
 
 @client.event
-async def on_message_edit(before, after, revers=False):
+async def on_message_edit(before, after):
     if before.author == client.user: return
     if before.author.bot: return
     if before.content == after.content: return
@@ -108,6 +108,11 @@ async def on_message(message):
                 await message.channel.send(result[0].replace("(,)", ""))
         except DatabaseError:
             cursor.execute("rollback;")
+    elif "media.discordapp.net" in message.content:
+        await message.delete()
+        await message.channel.send(message.content.replace("media.discordapp.net", "cdn.discordapp.com") + " sent by " + message.author.mention)
+
+
     await client.process_commands(message=message)
 
 #@client.command(name="t")
@@ -285,7 +290,7 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
 async def im(ctx, *, thingtosearch):
     _search_params = {
         'q': f'{thingtosearch}',
-        'num': 1,
+        'num': 123,
         'safe': 'off',
         'fileType': 'jpg',
         'imgType': 'photo',
@@ -296,10 +301,8 @@ async def im(ctx, *, thingtosearch):
 
     thing = gis.search(search_params=_search_params)
     for image in gis.results():
-        downloaded_result = image.download(r'C:\Users\tamim\PycharmProjects\the epic troll')
-        with open("testimasge.jpg", "wb") as f:
-            f.write(downloaded_result)
-        await ctx.send(file=r'testsimage.jpg')
+        downloaded_result = image.download(os.path.dirname(__file__))
+
 
 
 @client.command()
@@ -427,7 +430,7 @@ async def draw(ctx, *, whattotype):
 # async def punishment(ctx):
 #   punishments = open("punishments.json")
 
-
-TOKEN = os.environ["funnytoken"]
+with open("secret") as f:
+    TOKEN = f.read()
 
 client.run(TOKEN)
