@@ -108,12 +108,10 @@ async def on_message(message):
                 await message.channel.send(result[0].replace("(,)", ""))
         except DatabaseError:
             cursor.execute("rollback;")
-    elif "media.discordapp.net" in message.content:
+   elif "media.discordapp.net" in message.content and ".mp4" in message.content or ".mov" in message.content or ".webm" in message.content:
         await message.delete()
-        await message.channel.send(message.content.replace("media.discordapp.net", "cdn.discordapp.com") + " sent by " + message.author.mention)
-
-
-    await client.process_commands(message=message)
+        await message.channel.send(message.content.replace("media.discordapp.net", "cdn.discordapp.com") + " this video is sent by " + message.author.mention + "(this has been done so videos work correctly)")
+    	await client.process_commands(message=message)
 
 #@client.command(name="t")
 #async def s(ctx, ccname):
