@@ -109,9 +109,16 @@ async def on_message(message):
         except DatabaseError:
             cursor.execute("rollback;")
    elif "media.discordapp.net" in message.content and ".mp4" in message.content or ".mov" in message.content or ".webm" in message.content:
+          trashemoji = "🗑️"
+
+        def checkforreaction(reaction, user):
+            return str(user.id) == str(message.author.id) and str(reaction.emoji) in [trashemoji]
         await message.delete()
-        await message.channel.send(message.content.replace("media.discordapp.net", "cdn.discordapp.com") + " this video is sent by " + message.author.mention + "(this has been done so videos work correctly)")
-    	await client.process_commands(message=message)
+        msg = await message.channel.send(message.content.replace("media.discordapp.net", "cdn.discordapp.com") + " this video is sent by " + message.author.mention + "(this has been done so videos work correctly)")
+        await msg.add_reaction(trashemoji)
+        reaction, user = await client.wait_for("reaction_add", timeout=1000, check=checkforreaction)
+        if reaction.emoji == trashemoji:
+            await msg.delete()
 
 #@client.command(name="t")
 #async def s(ctx, ccname):
