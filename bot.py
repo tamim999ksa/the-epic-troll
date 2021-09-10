@@ -108,7 +108,7 @@ async def on_message(message):
                 await message.channel.send(result[0].replace("(,)", ""))
         except DatabaseError:
             cursor.execute("rollback;")
-   elif "media.discordapp.net" in message.content and ".mp4" in message.content or ".mov" in message.content or ".webm" in message.content:
+    elif "media.discordapp.net" in message.content and ".mp4" in message.content or ".mov" in message.content or ".webm" in message.content:
           trashemoji = "🗑️"
 
         def checkforreaction(reaction, user):
