@@ -1,7 +1,10 @@
 import asyncio
 import inspect
 import math
+import random
 import sqlite3
+import time
+
 from discord.ext import commands
 import discord
 from googletrans import Translator
@@ -18,6 +21,7 @@ from psycopg2 import DatabaseError
 import glob
 import uuid
 import shutil
+import imghdr
 
 dbname = 'dffop1b5kn2eng'
 dbhost = 'ec2-54-243-92-68.compute-1.amazonaws.com'
@@ -30,6 +34,7 @@ cursor = connection.cursor()
 
 translator = Translator()
 
+detectionenabled = False
 
 edited_messages_list = []
 edited_messages_usernames = []
@@ -49,11 +54,23 @@ main_guild = client.get_guild(828423940531159101)
 gis = GoogleImagesSearch('AIzaSyD-qS7dsHo4ZdWkFxFpjykPd_kstSqUgBk', '957703df971c2df44')
 
 
+
+
 @client.event
 async def on_ready():
     main_channel = client.get_channel(828423941017042964)
     print("bot is yesing")
 
+_search_params = {
+        'q': f'gif',
+        'num': 12,
+        'safe': 'medium',
+        'fileType': 'gif',
+        'imgType': 'photo',
+        'imgSize': 'imgSizeUndefined',
+        'imgDominantColor': 'black',
+        'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
+    }
 
 @client.event
 async def on_message_edit(before, after):
@@ -86,6 +103,7 @@ async def on_message_delete(before):
 
 @client.event
 async def on_message(message):
+
     if message.content == "t!": return
     if message.content.startswith("t!"):
         try:
@@ -108,8 +126,9 @@ async def on_message(message):
                 await message.channel.send(result[0].replace("(,)", ""))
         except DatabaseError:
             cursor.execute("rollback;")
+
     elif "media.discordapp.net" in message.content and ".mp4" in message.content or ".mov" in message.content or ".webm" in message.content:
-          trashemoji = "🗑️"
+        trashemoji = "🗑️"
 
         def checkforreaction(reaction, user):
             return str(user.id) == str(message.author.id) and str(reaction.emoji) in [trashemoji]
@@ -119,6 +138,19 @@ async def on_message(message):
         reaction, user = await client.wait_for("reaction_add", timeout=1000, check=checkforreaction)
         if reaction.emoji == trashemoji:
             await msg.delete()
+
+    elif "pls pfp" in message.content or "plz pfp" in message.content:
+        imagename = str(uuid.uuid4())
+        images = gis.search(search_params=_search_params, custom_image_name=imagename)
+        randomnumber = random.randint(0,12)
+        print(randomnumber)
+        gis.results()[randomnumber].download(os.path.dirname(__file__))
+        list_of_files = glob.glob(os.path.dirname(__file__) + "\*")
+        latest_file = max(list_of_files, key=os.path.getctime)
+        await message.channel.send(file=discord.File(latest_file))
+
+
+    await client.process_commands(message=message)
 
 #@client.command(name="t")
 #async def s(ctx, ccname):
@@ -170,6 +202,7 @@ async def ping(ctx):
     await ctx.send(embed=embed)
 
 
+
 @client.command()
 async def allcc(ctx):
     try:
@@ -196,7 +229,7 @@ async def addcc(ctx, thing, *, thingtosend):
     print(thing, thingtosend)
     try:
         command1 = """CREATE TABLE IF NOT EXISTS
-        CUSTOMCOMMANDS(
+        CUSTOMCOMMANDS_(
         CUSTOMCOMMAND  TEXT  PRIMARY KEY NOT NULL,
         WHATWILLCCSEND TEXT              NOT NULL)"""
         cursor.execute(command1)
@@ -295,7 +328,7 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
 async def im(ctx, *, thingtosearch):
     _search_params = {
         'q': f'{thingtosearch}',
-        'num': 123,
+        'num': 1,
         'safe': 'off',
         'fileType': 'jpg',
         'imgType': 'photo',
@@ -307,6 +340,92 @@ async def im(ctx, *, thingtosearch):
     thing = gis.search(search_params=_search_params)
     for image in gis.results():
         downloaded_result = image.download(os.path.dirname(__file__))
+
+
+
+@client.command()
+async def esnipe(ctx):
+    guildid = str(ctx.guild.id)
+    userid = str(ctx.author.id)
+    previuspage = '⬅️'
+    nextpage = '➡️'
+    page = len(edited_messages_list)
+    first_time = True
+    msg = await ctx.send("Click the right arrow to go to the latest edit and the left arrow to go to the oldest")
+    await msg.add_reaction(previuspage)
+    await msg.add_reaction(nextpage)
+
+    def checkforreaction(reaction, user):
+        return str(user.id) == userid and str(reaction.emoji) in [previuspage, nextpage]
+
+    loopclose = 0
+    while loopclose == 0:
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout=300, check=checkforreaction)
+            if reaction.emoji == nextpage:
+                if first_time:
+                    first_time = False
+                    page = len(edited_messages_list) - 1
+                    print(page)
+                else:
+                    page += 1
+            elif reaction.emoji == previuspage:
+                if first_time:
+                    first_time = False
+                    page = len(edited_messages_list) - len(edited_messages_list)
+                else:
+                    page -= 1
+            await msg.edit(embed=discord.Embed(color=discord.Color.orange()) .add_field(name="Unedited message:", value=edited_messages_list[page]) .set_author(name=edited_messages_usernames[page], icon_url=edited_messages_avatarurl[page]) .set_footer(text="press the right arrow to go to the next edit and the left arrow to go to the previous edit"))
+
+        except asyncio.TimeoutError:
+            loopclose = 1
+        except IndexError:
+            await ctx.send("there are no more edits")
+            loopclose = 1
+
+@client.command()
+async def snipe(ctx):
+    guildid = str(ctx.guild.id)
+    userid = str(ctx.author.id)
+    previuspage = '⬅️'
+    nextpage = '➡️'
+    page = len(edited_messages_list)
+    first_time = True
+    msg = await ctx.send("Click the right arrow to go to the latest deleted message and the left arrow to go to the oldest")
+    await msg.add_reaction(previuspage)
+    await msg.add_reaction(nextpage)
+
+    def checkforreaction(reaction, user):
+        return str(user.id) == userid and str(reaction.emoji) in [previuspage, nextpage]
+
+    loopclose = 0
+    while loopclose == 0:
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout=300, check=checkforreaction)
+            if reaction.emoji == nextpage:
+                if first_time:
+                    first_time = False
+                    page = len(deleted_messages_list) - 1
+                    print(page)
+                else:
+                    page += 1
+            elif reaction.emoji == previuspage:
+                if first_time:
+                    first_time = False
+                    page = len(deleted_messages_list) - len(deleted_messages_list)
+                else:
+                    page -= 1
+            await msg.edit(embed=discord.Embed(color=discord.Color.orange()).add_field(name="Deleted message:",
+                                                                                       value=deleted_messages_list[
+                                                                                           page]).set_author(
+                name=deleted_messages_usernames[page], icon_url=deleted_messages_avatarurl[page]).set_footer(
+                text="press the right arrow to go to the next deleted message and the left arrow to go to the previous deleted messages"))
+
+        except asyncio.TimeoutError:
+            loopclose = 1
+        except IndexError:
+            await ctx.send("there are no more deleted messages")
+            loopclose = 1
 
 
 @client.command()
