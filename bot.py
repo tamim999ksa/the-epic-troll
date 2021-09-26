@@ -23,10 +23,10 @@ import uuid
 import shutil
 import imghdr
 
-dbname = 'dffop1b5kn2eng'
-dbhost = 'ec2-54-243-92-68.compute-1.amazonaws.com'
-dbuser = 'lmpnevdicnobhu'
-dbpass = 'ead5820cafefeb57f830c9d11ccdd08d6f98a4f275f8ef48a373d29571140b10'
+dbname = os.environ["dbname"]
+dbhost = os.environ["dbhost"]
+dbuser = os.environ["dbuser"]
+dbpass = os.environ["dbpass"]
 
 connection = psycopg2.connect(dbname=dbname, user=dbuser, password=dbpass, host=dbhost)
 
@@ -51,7 +51,7 @@ my_bytes_io = BytesIO()
 
 main_guild = client.get_guild(828423940531159101)
 
-gis = GoogleImagesSearch('AIzaSyD-qS7dsHo4ZdWkFxFpjykPd_kstSqUgBk', '957703df971c2df44')
+gis = GoogleImagesSearch(os.environ["thing"], os.environ["thingy"])
 
 
 
