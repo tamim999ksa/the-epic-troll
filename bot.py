@@ -5,8 +5,8 @@ import random
 import sqlite3
 import time
 
-from discord.ext import commands
-import discord
+from nextcord.ext import commands
+import nextcord
 from googletrans import Translator
 from google_images_search import GoogleImagesSearch
 import requests
@@ -61,6 +61,7 @@ async def on_ready():
     main_channel = client.get_channel(828423941017042964)
     print("bot is yesing")
 
+
 _search_params = {
         'q': f'gif',
         'num': 12,
@@ -87,12 +88,11 @@ async def on_message_edit(before, after):
 
 @client.event
 async def on_message_delete(before):
+    logs_channel = client.get_channel(845049306242613298)
     if before.author == client.user: return
     if before.author.bot: return
     if before.attachments:
-        deleted_messages_list.append(before.attachments[0].url)
-        deleted_messages_usernames.append(before.author.name)
-        deleted_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
+       embed = nextcord.Embed
     else:
         deleted_messages_list.append(before.content)
         deleted_messages_usernames.append(before.author.name)
@@ -147,7 +147,7 @@ async def on_message(message):
         gis.results()[randomnumber].download(os.path.dirname(__file__))
         list_of_files = glob.glob(os.path.dirname(__file__) + "\*")
         latest_file = max(list_of_files, key=os.path.getctime)
-        await message.channel.send(file=discord.File(latest_file))
+        await message.channel.send(file=nextcord.File(latest_file))
 
 
     await client.process_commands(message=message)
@@ -188,10 +188,10 @@ async def eval_(ctx, *, command):
 
 @client.command()
 async def ping(ctx):
-    embed = discord.Embed(
+    embed = nextcord.Embed(
         title='Ping',
         description=f"Pong! `{math.floor(client.latency * 1000)}ms`",
-        color=discord.Colour.orange()
+        color=nextcord.Colour.orange()
     )
 
     embed.set_footer(text="i am racist")
@@ -208,10 +208,10 @@ async def allcc(ctx):
     try:
         cursor.execute("SELECT CUSTOMCOMMAND FROM CUSTOMCOMMANDS")
         allccs = cursor.fetchall()
-        embed = discord.Embed(
+        embed = nextcord.Embed(
             title="All Custom Commands",
             description=allccs,
-            color=discord.Colour.orange()
+            color=nextcord.Colour.orange()
         )
 
         embed.set_footer(text=f"Number of custom commands is: {len(allccs)}")
@@ -267,10 +267,10 @@ async def removeallcc(ctx):
 
 @client.group(invoke_without_command=True)
 async def help(ctx):
-    embed = discord.Embed(
+    embed = nextcord.Embed(
         title="Help",
         description="Use t!help to find out about all the commands",
-        color=discord.Colour.orange()
+        color=nextcord.Colour.orange()
     )
     embed.add_field(name="Custom Commands",
                     value="t!addcc {customcommand} {whatwillcustomcommandsend} \nt!removecc {customcommandname} \nt!removeallcc(tamim only) \nt!t {customcommandname}",
@@ -293,9 +293,9 @@ async def john_china(ctx):
 @client.command()
 async def translate(ctx, *, thingtotranslate):
     result = translator.translate(text=f'{thingtotranslate}', src='auto', dest='en')
-    embed = discord.Embed(
+    embed = nextcord.Embed(
         title="translation",
-        color=discord.Colour.orange()
+        color=nextcord.Colour.orange()
     )
 
     embed.set_footer(text="Note: This is not 100% correct so dont expect it to be exactly that")
@@ -310,9 +310,9 @@ async def translate(ctx, *, thingtotranslate):
 @client.command()
 async def translate_from(ctx, source, desti, *, thingtotranslate):
     result = translator.translate(text=f'{thingtotranslate}', src=f'{source}', dest=f'{desti}')
-    embed = discord.Embed(
+    embed = nextcord.Embed(
         title="translation",
-        color=discord.Colour.orange()
+        color=nextcord.Colour.orange()
     )
 
     embed.set_footer(text="Note: This is not 100% correct so dont expect it to be exactly that")
@@ -376,7 +376,7 @@ async def draw(ctx, *, whattotype):
                     points = [(WIDTH - width // 2), (HEIGHT - height // 2)]
                     d.text(((WIDTH - width)/2 + 30,(HEIGHT - height)/2 - 200), whattotype, fill="white", anchor="mt", font=font)
                     test_image = im.save("testimage.jpg", "JPEG")
-                    await ctx.send(file=discord.File("testimage.jpg"))
+                    await ctx.send(file=nextcord.File("testimage.jpg"))
 
 # @client.command()
 # async def punishment(ctx):
