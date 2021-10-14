@@ -32,28 +32,22 @@ connection = psycopg2.connect(dbname=dbname, user=dbuser, password=dbpass, host=
 
 cursor = connection.cursor()
 
+banned_words = ["nigger", "faggot", "fag", "fagget", "chink", "zipperhead", "niggar", "nigge", "faggat", "niggr"]
+
 translator = Translator()
 
 detectionenabled = False
 
-edited_messages_list = []
-edited_messages_usernames = []
-edited_messages_avatarurl = []
-deleted_messages_list = []
-deleted_messages_avatarurl = []
-deleted_messages_usernames = []
-revers = False
-
-client = commands.Bot(command_prefix='t!')
+client = commands.Bot(command_prefix='test!')
 client.remove_command('help')
+
+
 
 my_bytes_io = BytesIO()
 
 main_guild = client.get_guild(828423940531159101)
 
-gis = GoogleImagesSearch(os.environ["thing"], os.environ["thingy"])
-
-
+#gis = GoogleImagesSearch("AIzaSyD-qS7dsHo4ZdWkFxFpjykPd_kstSqUgBk","957703df971c2df44")
 
 
 @client.event
@@ -63,28 +57,30 @@ async def on_ready():
 
 
 _search_params = {
-        'q': f'gif',
-        'num': 12,
-        'safe': 'medium',
-        'fileType': 'gif',
-        'imgType': 'photo',
-        'imgSize': 'imgSizeUndefined',
-        'imgDominantColor': 'black',
-        'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
-    }
+    'q': f'gif',
+    'num': 12,
+    'safe': 'medium',
+    'fileType': 'gif',
+    'imgType': 'photo',
+    'imgSize': 'imgSizeUndefined',
+    'imgDominantColor': 'black',
+    'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
+}
+
 
 @client.event
 async def on_message_edit(before, after):
+    logs_channel = client.get_channel(845049306242613298)
     if before.author == client.user: return
     if before.author.bot: return
     if before.content == after.content: return
     if before.attachments: return
-    edited_messages_list.append(before.content)
-    edited_messages_usernames.append(before.author.name)
-    edited_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
-    print(before.author.name)
-    print("added " + before.content + " In table")
-    print(list(edited_messages_list))
+    embed = nextcord.Embed(color=nextcord.Color.orange())
+    embed.set_author(name=before.author.name, icon_url=before.author.avatar.url)
+    embed.add_field(name="Before:", value=before.content)
+    embed.add_field(name="After:", value=after.content)
+    await logs_channel.send(embed=embed)
+
 
 @client.event
 async def on_message_delete(before):
@@ -92,18 +88,20 @@ async def on_message_delete(before):
     if before.author == client.user: return
     if before.author.bot: return
     if before.attachments:
-       embed = nextcord.Embed
+        embed = nextcord.Embed(color=nextcord.Color.red())
+        embed.set_author(name=before.author.name, icon_url=before.author.avatar.url)
+        embed.add_field(name="Deleted message (Contains attachment(s)):", value=before.attachments[0])
+        await logs_channel.send(embed=embed)
     else:
-        deleted_messages_list.append(before.content)
-        deleted_messages_usernames.append(before.author.name)
-        deleted_messages_avatarurl.append(str(before.author.avatar_url_as(size=128)))
-    print(before.author.name)
-    print("added " + before.content + " In table")
-    print(list(deleted_messages_list))
+        embed = nextcord.Embed(color=nextcord.Color.red())
+        embed.set_author(name=before.author.name, icon_url=before.author.avatar.url)
+        embed.add_field(name="Deleted message:", value=before.content)
+        await logs_channel.send(embed=embed)
+
 
 @client.event
 async def on_message(message):
-
+    logs_channel = client.get_channel(845049306242613298)
     if message.content == "t!": return
     if message.content.startswith("t!"):
         try:
@@ -112,48 +110,45 @@ async def on_message(message):
     FROM    
 	    CUSTOMCOMMANDS
    WHERE
-	    CUSTOMCOMMAND = '{message.content.replace("t!","")}'"""
+	    CUSTOMCOMMAND = '{message.content.replace("t!", "")}'"""
             cursor.execute(command5)
             command6 = f"""SELECT
 	    WHATWILLCCSEND
     FROM    
 	    CUSTOMCOMMANDS
     WHERE 
-	    CUSTOMCOMMAND LIKE '{message.content.replace("t!","")}%';"""
+	    CUSTOMCOMMAND LIKE '{message.content.replace("t!", "")}%';"""
             cursor.execute(command6)
             result = cursor.fetchone()
             if result is not None:
                 await message.channel.send(result[0].replace("(,)", ""))
         except DatabaseError:
             cursor.execute("rollback;")
+    for i in banned_words:
+        if i in message.content:
+            await message.delete()
+            embed = nextcord.Embed(color=nextcord.Color.red())
+            embed.set_author(name=message.author.name, icon_url=message.author.avatar.url)
+            embed.add_field(name="Deleted message (Contains banned word):", value=message.content)
+            await logs_channel.send("⚠️ <@&845028431682994197> Banned word found. Please moderate. ⚠️", embed=embed)
 
-    #elif "media.discordapp.net" in message.content and ".mp4" in message.content or ".mov" in message.content or ".webm" in message.content:
-   #     trashemoji = "🗑️"
 
-    #    def checkforreaction(reaction, user):
-    #        return str(user.id) == str(message.author.id) and str(reaction.emoji) in [trashemoji]
-    #    await message.delete()
-    #    msg = await message.channel.send(message.content.replace("media.discordapp.net", "cdn.discordapp.com") + " this video is sent by " + message.author.mention + "(this has been done so videos work correctly)")
-     #   await msg.add_reaction(trashemoji)
-    #    reaction, user = await client.wait_for("reaction_add", timeout=1000, check=checkforreaction)
-    #    if reaction.emoji == trashemoji:
-     #       await msg.delete()
 
-    elif "pls pfp" in message.content or "plz pfp" in message.content:
+    if "pls pfp" in message.content or "plz pfp" in message.content:
         imagename = str(uuid.uuid4())
-        images = gis.search(search_params=_search_params, custom_image_name=imagename)
-        randomnumber = random.randint(0,12)
+      #  images = gis.search(search_params=_search_params, custom_image_name=imagename)
+        randomnumber = random.randint(0, 12)
         print(randomnumber)
-        gis.results()[randomnumber].download(os.path.dirname(__file__))
+        #gis.results()[randomnumber].download(os.path.dirname(__file__))
         list_of_files = glob.glob(os.path.dirname(__file__) + "\*")
         latest_file = max(list_of_files, key=os.path.getctime)
         await message.channel.send(file=nextcord.File(latest_file))
 
-
     await client.process_commands(message=message)
 
-#@client.command(name="t")
-#async def s(ctx, ccname):
+
+# @client.command(name="t")
+# async def s(ctx, ccname):
 #    try:
 #        command5 = f"""SELECT
 #	    CUSTOMCOMMAND
@@ -200,7 +195,6 @@ async def ping(ctx):
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
 
     await ctx.send(embed=embed)
-
 
 
 @client.command()
@@ -252,7 +246,9 @@ async def removecc(ctx, *, thingtoremove):
         except DatabaseError:
             cursor.execute("rollback;")
     else:
-        await ctx.send("you do not have the required premissions to remove a custom command. please tell someone who has manage messages perms to delete it and give a good reason to why")
+        await ctx.send(
+            "you do not have the required premissions to remove a custom command. please tell someone who has manage messages perms to delete it and give a good reason to why")
+
 
 @client.command()
 @commands.is_owner()
@@ -337,9 +333,9 @@ async def im(ctx, *, thingtosearch):
         'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
     }
 
-    thing = gis.search(search_params=_search_params)
-    for image in gis.results():
-        downloaded_result = image.download(os.path.dirname(__file__))
+    #thing = #gis.search(search_params=_search_params)
+   # for image in gis.results():
+     #te   downloaded_result = image.download(os.path.dirname(__file__))
 
 
 @client.command()
@@ -353,30 +349,33 @@ async def txt2img(ctx, *, thingtoput):
     )
     await ctx.send(r.json()['output_url'])
 
+
 @client.command()
 async def draw(ctx, *, whattotype):
-        try:
-            url = ctx.message.attachments[0].url
+    try:
+        url = ctx.message.attachments[0].url
 
 
-        except IndexError:
-            await ctx.send("no attachements")
-        else:
-            if url[0:26] == "https://cdn.discordapp.com":
-                r = requests.get(url, stream=True)
-                imagename = str(uuid.uuid4()) + ".jpg"
-                with open(imagename , 'wb') as out_file:
-                    print("saving image" + imagename)
-                    shutil.copyfileobj(r.raw, out_file)
-                    font = ImageFont.truetype(r"C:\Users\tamim\PycharmProjects\the epic troll\impact.ttf", 30)
-                    im = Image.open(imagename)
-                    WIDTH, HEIGHT = im.size
-                    d = ImageDraw.Draw(im)
-                    width, height = d.textsize(whattotype, font=font)
-                    points = [(WIDTH - width // 2), (HEIGHT - height // 2)]
-                    d.text(((WIDTH - width)/2 + 30,(HEIGHT - height)/2 - 200), whattotype, fill="white", anchor="mt", font=font)
-                    test_image = im.save("testimage.jpg", "JPEG")
-                    await ctx.send(file=nextcord.File("testimage.jpg"))
+    except IndexError:
+        await ctx.send("no attachements")
+    else:
+        if url[0:26] == "https://cdn.discordapp.com":
+            r = requests.get(url, stream=True)
+            imagename = str(uuid.uuid4()) + ".jpg"
+            with open(imagename, 'wb') as out_file:
+                print("saving image" + imagename)
+                shutil.copyfileobj(r.raw, out_file)
+                font = ImageFont.truetype(r"C:\Users\tamim\PycharmProjects\the epic troll\impact.ttf", 30)
+                im = Image.open(imagename)
+                WIDTH, HEIGHT = im.size
+                d = ImageDraw.Draw(im)
+                width, height = d.textsize(whattotype, font=font)
+                points = [(WIDTH - width // 2), (HEIGHT - height // 2)]
+                d.text(((WIDTH - width) / 2 + 30, (HEIGHT - height) / 2 - 200), whattotype, fill="white", anchor="mt",
+                       font=font)
+                test_image = im.save("testimage.jpg", "JPEG")
+                await ctx.send(file=nextcord.File("testimage.jpg"))
+
 
 # @client.command()
 # async def punishment(ctx):
