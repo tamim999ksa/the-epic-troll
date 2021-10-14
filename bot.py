@@ -38,7 +38,7 @@ translator = Translator()
 
 detectionenabled = False
 
-client = commands.Bot(command_prefix='test!')
+client = commands.Bot(command_prefix='t!')
 client.remove_command('help')
 
 
