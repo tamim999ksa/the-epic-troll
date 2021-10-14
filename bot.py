@@ -192,7 +192,7 @@ async def ping(ctx):
     embed.set_footer(text="i am racist")
     embed.set_image(
         url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
-    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
 
     await ctx.send(embed=embed)
 
@@ -209,7 +209,7 @@ async def allcc(ctx):
         )
 
         embed.set_footer(text=f"Number of custom commands is: {len(allccs)}")
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
         embed.set_thumbnail(
             url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
 
