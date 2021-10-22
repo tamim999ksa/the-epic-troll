@@ -295,7 +295,7 @@ async def translate(ctx, *, thingtotranslate):
     )
 
     embed.set_footer(text="Note: This is not 100% correct so dont expect it to be exactly that")
-    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
     embed.add_field(name=f"From {result.src}", value=thingtotranslate)
     embed.add_field(name=f"To {result.dest}", value=result.text)
 
@@ -312,7 +312,7 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
     )
 
     embed.set_footer(text="Note: This is not 100% correct so dont expect it to be exactly that")
-    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url_as(size=128))
+    embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
     embed.add_field(name=f"From {result.src}", value=thingtotranslate)
     embed.add_field(name=f"To {result.dest}", value=result.text)
 
