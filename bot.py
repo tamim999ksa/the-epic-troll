@@ -32,8 +32,6 @@ connection = psycopg2.connect(dbname=dbname, user=dbuser, password=dbpass, host=
 
 cursor = connection.cursor()
 
-banned_words = ["nigger", "faggot", "fag", "fagget", "chink", "zipperhead", "niggar", "nigge", "faggat", "niggr"]
-
 translator = Translator()
 
 detectionenabled = False
@@ -124,16 +122,6 @@ async def on_message(message):
                 await message.channel.send(result[0].replace("(,)", ""))
         except DatabaseError:
             cursor.execute("rollback;")
-    for i in banned_words:
-        if i in message.content:
-            await message.delete()
-            embed = nextcord.Embed(color=nextcord.Color.red())
-            embed.set_author(name=message.author.name, icon_url=message.author.avatar.url)
-            embed.add_field(name="Deleted message (Contains banned word):", value=message.content)
-            await logs_channel.send("⚠️ <@&845028431682994197> Banned word found. Please moderate. ⚠️", embed=embed)
-
-
-
     if "pls pfp" in message.content or "plz pfp" in message.content:
         imagename = str(uuid.uuid4())
       #  images = gis.search(search_params=_search_params, custom_image_name=imagename)
