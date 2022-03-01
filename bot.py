@@ -290,12 +290,6 @@ async def translate(ctx, *, thingtotranslate):
     if result is not None:
         await ctx.send(embed=embed)
 
-@client.command()
-async def say(ctx, *, thingtosay):
-	if thingtosay == "i am lonely":
-		await ctx.send("no you are the lonely one retard")
-	else:
-		await ctx.send(thingtosay)
 
 @client.command()
 async def translate_from(ctx, source, desti, *, thingtotranslate):
