@@ -189,11 +189,21 @@ async def mute(ctx: commands.Context, member: nextcord.Member, until: int=5):
            return await ctx.send("{} why are you trying to kill yourself".format(ctx.author.mention))
         handshake = await timeout_user(user_id=member.id, guild_id=ctx.guild.id, until=until)
         if handshake:
-            return await ctx.send(f"Successfully timed out user for {until} minutes.")
+            return await ctx.send(f"Successfully muted user for {until} minutes.")
+        await ctx.send("Something went wrong")
+
+
+@client.command()
+@commands.has_permissions(moderate_members=True)
+async def unmute(ctx: commands.Context, member: nextcord.Member):
+        handshake = await timeout_user(user_id=member.id, guild_id=ctx.guild.id, until=0)
+        if handshake:
+            return await ctx.send(f"Successfully unmuted user.")
         await ctx.send("Something went wrong")
 
 
 @mute.error
+@unmute.error
 async def timeout_error(ctx, error):
    if isinstance(error, MissingPermissions):
        await ctx.send("you dont even have perms to do that kys")
