@@ -4,11 +4,14 @@ import math
 import random
 import sqlite3
 import time
-
+import aiohttp
+import datetime
+import warnings
+import discord
 from nextcord.ext import commands
+from nextcord.ext.commands import MissingPermissions, MissingRequiredArgument
 import nextcord
 from googletrans import Translator
-from google_images_search import GoogleImagesSearch
 import requests
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
@@ -36,10 +39,11 @@ translator = Translator()
 
 detectionenabled = False
 
-client = commands.Bot(command_prefix='t!')
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+intents = nextcord.Intents.all()
+client = commands.Bot(command_prefix=["test!"], intents=intents)
 client.remove_command('help')
-
-
+client.session = aiohttp.ClientSession()
 
 my_bytes_io = BytesIO()
 
@@ -65,6 +69,15 @@ _search_params = {
     'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
 }
 
+async def timeout_user(*, user_id: int, guild_id: int, until):
+    headers = {"Authorization": f"Bot {client.http.token}"}
+    url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}"
+    timeout = (datetime.datetime.utcnow() + datetime.timedelta(minutes=until)).isoformat()
+    json = {'communication_disabled_until': timeout}
+    async with client.session.patch(url, json=json, headers=headers) as session:
+        if session.status in range(200, 299):
+           return True
+        return False
 
 @client.event
 async def on_message_edit(before, after):
@@ -168,6 +181,29 @@ async def eval_(ctx, *, command):
     else:
         print(res)
 
+@client.command()
+@commands.has_permissions(moderate_members=True)
+async def timeout(ctx: commands.Context, member: nextcord.Member, until: int=5):
+        if member == ctx.author:
+           return await ctx.send("{} why are you trying to kill yourself".format(ctx.author.mention))
+        handshake = await timeout_user(user_id=member.id, guild_id=ctx.guild.id, until=until)
+        if handshake:
+            return await ctx.send(f"Successfully timed out user for {until} minutes.")
+        await ctx.send("Something went wrong")
+
+
+@timeout.error
+async def kick_error(ctx, error):
+   if isinstance(error, MissingPermissions):
+       await ctx.send("you dont even have perms to do that kys")
+   elif isinstance(error, MissingRequiredArgument):
+       embed = nextcord.Embed(title="Timeout Command", description="A command that can be used to timeout users with the new timeout feature from discord", color=nextcord.Color.orange())
+       embed.add_field(name="Usage:", value="t!timeout (userid or user here) (time in minutes)",inline=False)
+       embed.add_field(name="Example 1:", value="t!timeout @tamim#7304",inline=False)
+       embed.add_field(name="(if you put no time in the 3rd arguement then it will be defaulted to 5 minutes)", value="h",inline=False)
+       embed.add_field(name="Example 2:", value="t!timeout @tamim#7304 10",inline=False)
+       embed.set_footer(text="This was made because you are missing some arguements.")
+       await ctx.send(embed=embed)
 
 @client.command()
 async def ping(ctx):
