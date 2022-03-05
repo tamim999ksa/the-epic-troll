@@ -41,7 +41,7 @@ detectionenabled = False
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 intents = nextcord.Intents.all()
-client = commands.Bot(command_prefix=["test!"], intents=intents)
+client = commands.Bot(command_prefix=["t!"], intents=intents)
 client.remove_command('help')
 client.session = aiohttp.ClientSession()
 
@@ -184,7 +184,7 @@ async def eval_(ctx, *, command):
 
 @client.command()
 @commands.has_permissions(moderate_members=True)
-async def timeout(ctx: commands.Context, member: nextcord.Member, until: int=5):
+async def mute(ctx: commands.Context, member: nextcord.Member, until: int=5):
         if member == ctx.author:
            return await ctx.send("{} why are you trying to kill yourself".format(ctx.author.mention))
         handshake = await timeout_user(user_id=member.id, guild_id=ctx.guild.id, until=until)
@@ -193,16 +193,16 @@ async def timeout(ctx: commands.Context, member: nextcord.Member, until: int=5):
         await ctx.send("Something went wrong")
 
 
-@timeout.error
-async def kick_error(ctx, error):
+@mute.error
+async def timeout_error(ctx, error):
    if isinstance(error, MissingPermissions):
        await ctx.send("you dont even have perms to do that kys")
    elif isinstance(error, MissingRequiredArgument):
-       embed = nextcord.Embed(title="Timeout Command", description="A command that can be used to timeout users with the new timeout feature from discord", color=nextcord.Color.orange())
-       embed.add_field(name="Usage:", value="t!timeout (userid or user here) (time in minutes)",inline=False)
-       embed.add_field(name="Example 1:", value="t!timeout @tamim#7304",inline=False)
+       embed = nextcord.Embed(title="Mute Command", description="A command that can be used to mute users with the new timeout feature from discord", color=nextcord.Color.orange())
+       embed.add_field(name="Usage:", value="t!mute (userid or user here) (time in minutes)",inline=False)
+       embed.add_field(name="Example 1:", value="t!mute @tamim#7304",inline=False)
        embed.add_field(name="(if you put no time in the 3rd arguement then it will be defaulted to 5 minutes)", value="h",inline=False)
-       embed.add_field(name="Example 2:", value="t!timeout @tamim#7304 10",inline=False)
+       embed.add_field(name="Example 2:", value="t!mute @tamim#7304 10",inline=False)
        embed.set_footer(text="This was made because you are missing some arguements.")
        await ctx.send(embed=embed)
 
