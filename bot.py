@@ -203,8 +203,7 @@ async def unmute(ctx: commands.Context, member: nextcord.Member):
 
 
 @mute.error
-@unmute.error
-async def timeout_error(ctx, error):
+async def mute_error(ctx, error):
    if isinstance(error, MissingPermissions):
        await ctx.send("you dont even have perms to do that kys")
    elif isinstance(error, MissingRequiredArgument):
@@ -215,6 +214,19 @@ async def timeout_error(ctx, error):
        embed.add_field(name="Example 2:", value="t!mute @tamim#7304 10",inline=False)
        embed.set_footer(text="This was made because you are missing some arguements.")
        await ctx.send(embed=embed)
+
+
+@unmute.error
+async def unmute_error(ctx, error):
+   if isinstance(error, MissingPermissions):
+       await ctx.send("you dont even have perms to do that kys")
+   elif isinstance(error, MissingRequiredArgument):
+       embed = nextcord.Embed(title="Mute Command", description="A command that can be used to unmute users who were muted with the new timeout feature from discord", color=nextcord.Color.orange())
+       embed.add_field(name="Usage:", value="t!unmute (userid or user here)",inline=False)
+       embed.add_field(name="Example 1:", value="t!unmute @tamim#7304",inline=False)
+       embed.set_footer(text="This was made because you are missing some arguements.")
+       await ctx.send(embed=embed)
+
 
 @client.command()
 async def ping(ctx):
