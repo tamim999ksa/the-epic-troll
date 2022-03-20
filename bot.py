@@ -146,7 +146,7 @@ async def saul(ctx):
 @client.command()
 async def mutes(ctx, member: discord.Member):
     try:
-        cursor.execute(f"""SELECT REASON,TIME FROM MUTES WHERE ID = '{member.id}';""")
+        cursor.execute(f"""SELECT REASON,TIME FROM MUTES_{ctx.guild.id} WHERE ID = '{member.id}';""")
         mutesOfPerson = cursor.fetchall()
         embed = nextcord.Embed(title=f"{member.name}#{member.discriminator}'s mutes", color=discord.Color.orange())
         timeOfMute = cursor.fetchall()
