@@ -69,6 +69,7 @@ _search_params = {
     'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
 }
 
+
 async def timeout_user(*, user_id: int, guild_id: int, until):
     headers = {"Authorization": f"Bot {client.http.token}"}
     url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}"
@@ -76,7 +77,7 @@ async def timeout_user(*, user_id: int, guild_id: int, until):
     json = {'communication_disabled_until': timeout}
     async with client.session.patch(url, json=json, headers=headers) as session:
         if session.status in range(200, 299):
-           return True
+            return True
         return False
 
 
@@ -111,6 +112,80 @@ async def on_message_delete(before):
         await logs_channel.send(embed=embed)
 
 
+@client.command()
+@commands.has_permissions(moderate_members=True)
+async def mute(ctx: commands.Context, member: nextcord.Member, until: int = 5, *, reason=None):
+    if member == ctx.author:
+        return await ctx.send("{} why are you trying to kill yourself".format(ctx.author.mention))
+    handshake = await timeout_user(user_id=member.id, guild_id=ctx.guild.id, until=until)
+    print(reason, member.id)
+    if handshake:
+        try:
+            command1 = f"""CREATE TABLE IF NOT EXISTS
+                            MUTES_{ctx.guild.id} (
+                            REASON  TEXT    PRIMARY KEY  NOT NULL,
+                            ID      NUMERIC              NOT NULL,
+                            TIME    TEXT                 NOT NULL
+                            )"""
+            cursor.execute(command1)
+            command2 = f"INSERT INTO MUTES_{ctx.guild.id} VALUES ('{reason}', '{member.id}', '{until}');"
+            cursor.execute(command2)
+            connection.commit()
+            return await ctx.send(f"Successfully muted user for {until} minutes.")
+        except DatabaseError:
+            cursor.execute("rollback;")
+
+        # return await ctx.send("cannot add mute because tamim is retarded and he is trying to fix the database")
+    await ctx.send("Something went wrong")
+
+@client.command()
+async def saul(ctx):
+    f = open()
+    await ctx.send(file=f)
+
+@client.command()
+async def mutes(ctx, member: discord.Member):
+    try:
+        cursor.execute(f"""SELECT REASON,TIME FROM MUTES WHERE ID = '{member.id}';""")
+        mutesOfPerson = cursor.fetchall()
+        embed = nextcord.Embed(title=f"{member.name}#{member.discriminator}'s mutes", color=discord.Color.orange())
+        timeOfMute = cursor.fetchall()
+        for i in mutesOfPerson:
+                embed.add_field(name=f'Reason: {i[0]}', value=f'Duartion: {i[1]} minutes.', inline=False)
+        print(mutesOfPerson)
+        await ctx.send(embed=embed)
+    except DatabaseError:
+        cursor.execute("rollback;")
+
+
+
+@client.command()
+@commands.has_permissions(moderate_members=True)
+async def unmute(ctx: commands.Context, member: nextcord.Member):
+    handshake = await timeout_user(user_id=member.id, guild_id=ctx.guild.id, until=0)
+    if handshake:
+        return await ctx.send(f"Successfully unmuted user.")
+    await ctx.send("Something went wrong")
+
+
+@mute.error
+@unmute.error
+async def kick_error(ctx, error):
+    if isinstance(error, MissingPermissions):
+        await ctx.send("you dont even have perms to do that kys")
+    elif isinstance(error, MissingRequiredArgument):
+        embed = nextcord.Embed(title="Timeout Command",
+                               description="A command that can be used to timeout users with the new timeout feature from discord",
+                               color=nextcord.Color.orange())
+        embed.add_field(name="Usage:", value="t!mute (userid or user here) (time in minutes)", inline=False)
+        embed.add_field(name="Example 1:", value="t!mute @tamim#7304", inline=False)
+        embed.add_field(name="(if you put no time in the 3rd arguement then it will be defaulted to 5 minutes)",
+                        value="h", inline=False)
+        embed.add_field(name="Example 2:", value="t!mute @tamim#7304 10", inline=False)
+        embed.set_footer(text="This was made because you are missing some arguements.")
+        await ctx.send(embed=embed)
+
+
 @client.event
 async def on_message(message):
     logs_channel = client.get_channel(845049306242613298)
@@ -120,14 +195,14 @@ async def on_message(message):
             command5 = f"""SELECT
 	    CUSTOMCOMMAND
     FROM    
-	    CUSTOMCOMMANDS
+	    CUSTOMCOMMANDS_{message.guild.id}
    WHERE
 	    CUSTOMCOMMAND = '{message.content.replace("t!", "")}'"""
             cursor.execute(command5)
             command6 = f"""SELECT
 	    WHATWILLCCSEND
     FROM    
-	    CUSTOMCOMMANDS
+	    CUSTOMCOMMANDS_{message.guild.id}
     WHERE 
 	    CUSTOMCOMMAND LIKE '{message.content.replace("t!", "")}%';"""
             cursor.execute(command6)
@@ -136,12 +211,13 @@ async def on_message(message):
                 await message.channel.send(result[0].replace("(,)", ""))
         except DatabaseError:
             cursor.execute("rollback;")
+
     if "pls pfp" in message.content or "plz pfp" in message.content:
         imagename = str(uuid.uuid4())
-      #  images = gis.search(search_params=_search_params, custom_image_name=imagename)
+        #  images = gis.search(search_params=_search_params, custom_image_name=imagename)
         randomnumber = random.randint(0, 12)
         print(randomnumber)
-        #gis.results()[randomnumber].download(os.path.dirname(__file__))
+        # gis.results()[randomnumber].download(os.path.dirname(__file__))
         list_of_files = glob.glob(os.path.dirname(__file__) + "\*")
         latest_file = max(list_of_files, key=os.path.getctime)
         await message.channel.send(file=nextcord.File(latest_file))
@@ -182,51 +258,6 @@ async def eval_(ctx, *, command):
     else:
         print(res)
 
-@client.command()
-@commands.has_permissions(moderate_members=True)
-async def mute(ctx: commands.Context, member: nextcord.Member, until: int=5):
-        if member == ctx.author:
-           return await ctx.send("{} why are you trying to kill yourself".format(ctx.author.mention))
-        handshake = await timeout_user(user_id=member.id, guild_id=ctx.guild.id, until=until)
-        if handshake:
-            return await ctx.send(f"Successfully muted user for {until} minutes.")
-        await ctx.send("Something went wrong")
-
-
-@client.command()
-@commands.has_permissions(moderate_members=True)
-async def unmute(ctx: commands.Context, member: nextcord.Member):
-        handshake = await timeout_user(user_id=member.id, guild_id=ctx.guild.id, until=0)
-        if handshake:
-            return await ctx.send(f"Successfully unmuted user.")
-        await ctx.send("Something went wrong")
-
-
-@mute.error
-async def mute_error(ctx, error):
-   if isinstance(error, MissingPermissions):
-       await ctx.send("you dont even have perms to do that kys")
-   elif isinstance(error, MissingRequiredArgument):
-       embed = nextcord.Embed(title="Mute Command", description="A command that can be used to mute users with the new timeout feature from discord", color=nextcord.Color.orange())
-       embed.add_field(name="Usage:", value="t!mute (userid or user here) (time in minutes)",inline=False)
-       embed.add_field(name="Example 1:", value="t!mute @tamim#7304",inline=False)
-       embed.add_field(name="(if you put no time in the 3rd arguement then it will be defaulted to 5 minutes)", value="h",inline=False)
-       embed.add_field(name="Example 2:", value="t!mute @tamim#7304 10",inline=False)
-       embed.set_footer(text="This was made because you are missing some arguements.")
-       await ctx.send(embed=embed)
-
-
-@unmute.error
-async def unmute_error(ctx, error):
-   if isinstance(error, MissingPermissions):
-       await ctx.send("you dont even have perms to do that kys")
-   elif isinstance(error, MissingRequiredArgument):
-       embed = nextcord.Embed(title="Unmute Command", description="A command that can be used to unmute users who were muted with the new timeout feature from discord", color=nextcord.Color.orange())
-       embed.add_field(name="Usage:", value="t!unmute (userid or user here)",inline=False)
-       embed.add_field(name="Example 1:", value="t!unmute @tamim#7304",inline=False)
-       embed.set_footer(text="This was made because you are missing some arguements.")
-       await ctx.send(embed=embed)
-
 
 @client.command()
 async def ping(ctx):
@@ -247,7 +278,7 @@ async def ping(ctx):
 @client.command()
 async def allcc(ctx):
     try:
-        cursor.execute("SELECT CUSTOMCOMMAND FROM CUSTOMCOMMANDS")
+        cursor.execute(f"SELECT CUSTOMCOMMAND FROM CUSTOMCOMMANDS_{ctx.guild.id}")
         allccs = cursor.fetchall()
         embed = nextcord.Embed(
             title="All Custom Commands",
@@ -269,13 +300,13 @@ async def allcc(ctx):
 async def addcc(ctx, thing, *, thingtosend):
     print(thing, thingtosend)
     try:
-        command1 = """CREATE TABLE IF NOT EXISTS
-        CUSTOMCOMMANDS_(
+        command1 = f"""CREATE TABLE IF NOT EXISTS
+        CUSTOMCOMMANDS_{ctx.guild.id}(
         CUSTOMCOMMAND  TEXT  PRIMARY KEY NOT NULL,
         WHATWILLCCSEND TEXT              NOT NULL)"""
         cursor.execute(command1)
         cursor.execute(
-            f"INSERT INTO CUSTOMCOMMANDS (CUSTOMCOMMAND, WHATWILLCCSEND) VALUES ('{thing}','{thingtosend}');")
+            f"INSERT INTO CUSTOMCOMMANDS_{ctx.guild.id} (CUSTOMCOMMAND, WHATWILLCCSEND) VALUES ('{thing}','{thingtosend}');")
         connection.commit()
         await ctx.send("added " + thing + " in database")
     except DatabaseError:
@@ -286,7 +317,7 @@ async def addcc(ctx, thing, *, thingtosend):
 async def removecc(ctx, *, thingtoremove):
     if ctx.author.guild_permissions.manage_messages or ctx.author.id == 756504591725756537:
         try:
-            command4 = f"""DELETE FROM CUSTOMCOMMANDS WHERE CUSTOMCOMMAND LIKE '{thingtoremove}%';"""
+            command4 = f"""DELETE FROM CUSTOMCOMMANDS_{ctx.guild.id} WHERE CUSTOMCOMMAND LIKE '{thingtoremove}%';"""
             cursor.execute(command4)
             connection.commit()
             await ctx.send(f"deleted {thingtoremove} from database")
@@ -380,9 +411,11 @@ async def im(ctx, *, thingtosearch):
         'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
     }
 
-    #thing = #gis.search(search_params=_search_params)
-   # for image in gis.results():
-     #te   downloaded_result = image.download(os.path.dirname(__file__))
+    # thing = #gis.search(search_params=_search_params)
+
+
+# for image in gis.results():
+# te   downloaded_result = image.download(os.path.dirname(__file__))
 
 
 @client.command()
@@ -422,6 +455,12 @@ async def draw(ctx, *, whattotype):
                        font=font)
                 test_image = im.save("testimage.jpg", "JPEG")
                 await ctx.send(file=nextcord.File("testimage.jpg"))
+
+
+@client.command()
+async def allbots(ctx):
+    bots = len(ctx.guild.get_all_members)
+    await ctx.send(bots)
 
 
 # @client.command()
