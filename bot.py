@@ -116,7 +116,7 @@ async def on_message_delete(before):
 @commands.has_permissions(moderate_members=True)
 async def mute(ctx: commands.Context, member: nextcord.Member, until: int = 5, *, reason=None):
     if member == ctx.author:
-        return await ctx.send("{} why are you trying to kill yourself".format(ctx.author.mention))
+        return await ctx.send("{} You cannot mute yourself.".format(ctx.author.mention))
     handshake = await timeout_user(user_id=member.id, guild_id=ctx.guild.id, until=until)
     print(reason, member.id)
     if handshake:
@@ -137,11 +137,6 @@ async def mute(ctx: commands.Context, member: nextcord.Member, until: int = 5, *
 
         # return await ctx.send("cannot add mute because tamim is retarded and he is trying to fix the database")
     await ctx.send("Something went wrong")
-
-@client.command()
-async def saul(ctx):
-    f = open()
-    await ctx.send(file=f)
 
 @client.command()
 async def mutes(ctx, member: discord.Member):
@@ -172,7 +167,7 @@ async def unmute(ctx: commands.Context, member: nextcord.Member):
 @unmute.error
 async def kick_error(ctx, error):
     if isinstance(error, MissingPermissions):
-        await ctx.send("you dont even have perms to do that kys")
+        await ctx.send("You do not have the required perms to do that")
     elif isinstance(error, MissingRequiredArgument):
         embed = nextcord.Embed(title="Timeout Command",
                                description="A command that can be used to timeout users with the new timeout feature from discord",
