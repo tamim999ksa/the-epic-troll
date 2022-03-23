@@ -263,7 +263,7 @@ async def eval_(ctx, *, command):
 async def ping(ctx):
     embed = nextcord.Embed(
         title='Ping',
-        description=f"Pong! `{math.floor(client.latency * 1000)}ms`",
+        description=f"The ping is: `{math.floor(client.latency * 1000)}ms`",
         color=nextcord.Colour.orange()
     )
 
