@@ -397,20 +397,49 @@ async def translate_from(ctx, source, desti, *, thingtotranslate):
 async def im(ctx, *, thingtosearch):
     _search_params = {
         'q': f'{thingtosearch}',
-        'num': 1,
-        'safe': 'off',
-        'fileType': 'jpg',
-        'imgType': 'photo',
-        'imgSize': 'imgSizeUndefined',
-        'imgDominantColor': 'black',
-        'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived'
+        'num': 100,
+        #'fileType': 'jpg|gif|png',
+       # 'rights': 'cc_publicdomain|cc_attribute|cc_sharealike|cc_noncommercial|cc_nonderived',
+       # 'safe': 'off',
+       # 'imgType': 'imgTypeUndefined',
+       # 'imgSize': 'imgSizeUndefined',
+       # 'imgDominantColor': 'imgDominantColorUndefined',
+       # 'imgColorType': 'color|gray|mono|trans|imgColorTypeUndefined'
     }
+    page = 0
+    userid = str(ctx.author.id)
+    thing = gis.search(search_params=_search_params)
+    msg = await ctx.send(embed=discord.Embed(title="Search result:", description=(str(page + 1) + " out of " + str(len(gis.results()))), color=discord.Color.red())
+                         .set_image(url=gis.results()[0].url)
+                         .add_field(name="Link:", value=gis.results()[0].referrer_url))
+    await msg.add_reaction("⬅️")
+    first_time = True
+    await msg.add_reaction("➡️")
+    previuspage = "⬅️"
+    nextpage = "➡️"
+    loopclose = 0
 
-    # thing = #gis.search(search_params=_search_params)
+    def checkforreaction(reaction, user):
+        return str(user.id) == userid and str(reaction.emoji) in [previuspage, nextpage]
 
+    while loopclose == 0:
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout=300, check=checkforreaction)
+            if reaction.emoji == nextpage:
+                    page += 1
+            elif reaction.emoji == previuspage:
+                    page -= 1
+            await msg.edit(embed=discord.Embed(title="Search result:", description=(str(page + 1) + " out of " + str(len(gis.results()))), color=discord.Color.red())
+                           .set_image(url=gis.results()[page].url)
+                           .add_field(name="Link:", value=gis.results()[page].referrer_url))
 
-# for image in gis.results():
-# te   downloaded_result = image.download(os.path.dirname(__file__))
+        except asyncio.TimeoutError:
+            loopclose = 1
+        except IndexError:
+            page = 0
+            await msg.edit(embed=discord.Embed(title="Search result:", description=(str(page + 1) + " out of " + str(len(gis.results()))), color=discord.Color.red())
+                           .set_image(url=gis.results()[0].url)
+                           .add_field(name="Link:", value=gis.results()[page].referrer_url))
 
 
 @client.command()
