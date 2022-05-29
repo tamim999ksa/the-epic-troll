@@ -19,6 +19,7 @@ import psycopg2
 import asyncpg
 import os
 import json
+from google_images_search import GoogleImagesSearch
 from google_images_download import google_images_download
 from psycopg2 import DatabaseError
 import glob
@@ -49,7 +50,7 @@ my_bytes_io = BytesIO()
 
 main_guild = client.get_guild(828423940531159101)
 
-#gis = GoogleImagesSearch("AIzaSyD-qS7dsHo4ZdWkFxFpjykPd_kstSqUgBk","957703df971c2df44")
+gis = GoogleImagesSearch(os.environ["thing"],os.environ["thingy"])
 
 
 @client.event
