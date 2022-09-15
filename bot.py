@@ -82,35 +82,35 @@ async def timeout_user(*, user_id: int, guild_id: int, until):
         return False
 
 
-@client.event
-async def on_message_edit(before, after):
-    logs_channel = client.get_channel(845049306242613298)
-    if before.author == client.user: return
-    if before.author.bot: return
-    if before.content == after.content: return
-    if before.attachments: return
-    embed = nextcord.Embed(color=nextcord.Color.orange())
-    embed.set_author(name=before.author.name, icon_url=before.author.avatar.url)
-    embed.add_field(name="Before:", value=before.content)
-    embed.add_field(name="After:", value=after.content)
-    await logs_channel.send(embed=embed)
-
-
-@client.event
-async def on_message_delete(before):
-    logs_channel = client.get_channel(845049306242613298)
-    if before.author == client.user: return
-    if before.author.bot: return
-    if before.attachments:
-        embed = nextcord.Embed(color=nextcord.Color.red())
-        embed.set_author(name=before.author.name, icon_url=before.author.avatar.url)
-        embed.add_field(name="Deleted message (Contains attachment(s)):", value=before.attachments[0])
-        await logs_channel.send(embed=embed)
-    else:
-        embed = nextcord.Embed(color=nextcord.Color.red())
-        embed.set_author(name=before.author.name, icon_url=before.author.avatar.url)
-        embed.add_field(name="Deleted message:", value=before.content)
-        await logs_channel.send(embed=embed)
+#@client.event
+#async def on_message_edit(before, after):
+#    logs_channel = client.get_channel(845049306242613298)
+#    if before.author == client.user: return
+#    if before.author.bot: return
+#    if before.content == after.content: return
+#    if before.attachments: return
+#    embed = nextcord.Embed(color=nextcord.Color.orange())
+#    embed.set_author(name=before.author.name, icon_url=before.author.avatar.url)
+#    embed.add_field(name="Before:", value=before.content)
+#    embed.add_field(name="After:", value=after.content)
+#    await logs_channel.send(embed=embed)
+#
+#
+#@client.event
+#async def on_message_delete(before):
+#    logs_channel = client.get_channel(845049306242613298)
+#    if before.author == client.user: return
+#    if before.author.bot: return
+#    if before.attachments:
+#        embed = nextcord.Embed(color=nextcord.Color.red())
+#        embed.set_author(name=before.author.name, icon_url=before.author.avatar.url)
+#        embed.add_field(name="Deleted message (Contains attachment(s)):", value=before.attachments[0])
+#        await logs_channel.send(embed=embed)
+#    else:
+#        embed = nextcord.Embed(color=nextcord.Color.red())
+#        embed.set_author(name=before.author.name, icon_url=before.author.avatar.url)
+#        embed.add_field(name="Deleted message:", value=before.content)
+#        await logs_channel.send(embed=embed)
 
 
 @client.command()
