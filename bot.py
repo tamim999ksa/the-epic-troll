@@ -56,7 +56,7 @@ gis = GoogleImagesSearch(os.environ["thing"],os.environ["thingy"])
 @client.event
 async def on_ready():
     main_channel = client.get_channel(828423941017042964)
-    print("bot is yesing")
+    print("bot is on")
 
 
 _search_params = {
@@ -263,7 +263,7 @@ async def ping(ctx):
         color=nextcord.Colour.orange()
     )
 
-    embed.set_footer(text="i am racist")
+    embed.set_footer(text="Current Ping")
     embed.set_image(
         url="https://media.discordapp.net/attachments/824625614312046592/844570716250963978/caption-5-1.gif")
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url)
@@ -349,15 +349,9 @@ async def help(ctx):
     embed.add_field(name="Other", value="t!john_china")
     embed.add_field(name="Translation",
                     value="t!translate {untranslated text} \nt!translate_from {from} {to} {untranslated text}")
-    embed.set_footer(text="yo mama so fat")
     embed.set_author(name=ctx.author.name)
 
     await ctx.send(embed=embed)
-
-
-@client.command()
-async def john_china(ctx):
-    await ctx.send("https://cdn.discordapp.com/attachments/792480412647161906/848385363709526046/video0_1.mp4")
 
 
 @client.command()
