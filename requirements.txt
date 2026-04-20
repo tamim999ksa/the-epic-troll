@@ -8,3 +8,4 @@ googletrans==3.1.0a0
 Google-Images-Search==1.4.3
 asyncpg==0.23.0
 google_images_download
+selenium>=4.15.1 # not directly required, pinned by Snyk to avoid a vulnerability
